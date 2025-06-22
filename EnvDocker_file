@@ -1,0 +1,99 @@
+#Dockerfile to create container to build enviroment
+# for Klipper
+#
+#  https://github.com/memfis99999
+# Этот проект распространяется под лицензией **GNU General Public License v3.0 (GPLv3)**.
+# См. [LICENSE](https://www.gnu.org/licenses/gpl-3.0.html) для подробностей.
+#
+# Ты вольен использовать, изменять, распространять и адаптировать этот код,
+# при условии соблюдения условий лицензии GPLv3.
+
+
+
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TOOLCHAIN_DIR=/opt/klipper-toolchains
+ENV USERNAME=klippy
+
+ARG TARGET_UID=1000
+ARG TARGET_GID=1000
+
+# Установка зависимостей
+RUN apt-get update -y && apt-get upgrade -y
+RUN apt-get install -y sudo \
+      make \
+      cmake \
+      wget \
+      git \
+      unzip \
+      srecord
+
+# Переименовывали пользователя в ubuntu24.04.
+# RUN usermod -l klippy $(getent passwd 1000 | cut -d: -f1) && \
+#     groupmod -n klippy $(getent group 1000 | cut -d: -f1) && \
+#     usermod -d /home/klippy -m klippy && \
+#     echo 'klippy ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/klippy && \
+#     chmod 0440 /etc/sudoers.d/klippy && \
+#     chown -R klippy:klippy /home/klippy
+
+# Создаём пользователя с заданными UID и GID
+RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
+    useradd -m -u ${TARGET_UID} -g ${TARGET_GID} -s /bin/bash ${USERNAME} && \
+    echo '${USERNAME} ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/${USERNAME} && \
+    chmod 0440 /etc/sudoers.d/${USERNAME} && \
+    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
+
+# Создаем скрип выполняемый при входе в контейнер
+# копируем папку ci_build, если ее нет в /klipper
+RUN echo '' >> /etc/bash.bashrc && \
+    echo '# Копирование ci_build при первом запуске' >> /etc/bash.bashrc && \
+    echo 'if [ ! -d /klipper/ci_build ]; then' >> /etc/bash.bashrc && \
+    echo '  echo "[INFO] Копирую ci_build в /klipper..."' >> /etc/bash.bashrc && \
+    echo '  cp -r ${TOOLCHAIN_DIR}/ci_build/ /klipper' >> /etc/bash.bashrc && \
+    echo 'fi' >> /etc/bash.bashrc
+
+#   проверяет доступный ли ~/init_history.sh
+#   который монтируется при запуске при необходимости и содержит
+#   предварительно заполненную историю, доступную по кнопкам ввер и вниз
+RUN echo '' >> /etc/bash.bashrc && \
+    echo '# Подгрузка bash-истории если доступна' >> /etc/bash.bashrc && \
+    echo 'if [ -f ~/init_history.sh ]; then' >> /etc/bash.bashrc && \
+    echo '  history -c' >> /etc/bash.bashrc && \
+    echo '  cat ~/init_history.sh > ~/.bash_history' >> /etc/bash.bashrc && \
+    echo '  history -r' >> /etc/bash.bashrc && \
+    echo 'fi' >> /etc/bash.bashrc && \
+    echo '' >> /etc/bash.bashrc
+
+RUN mkdir -p ${TOOLCHAIN_DIR}/scripts && \
+    chown -R ${USERNAME}:${USERNAME} ${TOOLCHAIN_DIR} && \
+    chmod -R 755 ${TOOLCHAIN_DIR}
+
+WORKDIR $TOOLCHAIN_DIR
+
+# Копируем нужный скрипт из scripts/
+COPY scripts/ci-install.sh /tmp/ci-install.sh
+
+# Патчим в /tmp и возвращаем в ./scripts
+RUN sed -E 's/sudo //g; s/apt-get install +/apt-get install -y /g' \
+    /tmp/ci-install.sh > $TOOLCHAIN_DIR/scripts/ci-install.sh
+
+COPY scripts/klippy-requirements.txt ./scripts/klippy-requirements.txt
+
+# Запуск скрипта установки необходимого окружения
+RUN bash ./scripts/ci-install.sh
+
+# Чистим от лишнего
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV PATH="/klipper/ci_build/or1k-elf/bin:\
+/klipper/ci_build/pru-elf/bin:\
+/klipper/ci_build/python-env/bin:\
+/klipper/ci_build/python2-env/bin:${PATH}"
+
+USER ${USERNAME}
+
+WORKDIR /klipper
+
+CMD ["/bin/bash"]

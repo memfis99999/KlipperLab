@@ -1,0 +1,165 @@
+#Dockerfile to create container to build enviroment
+# for Klipper simulations
+#
+#  https://github.com/memfis99999
+# Этот проект распространяется под лицензией **GNU General Public License v3.0 (GPLv3)**.
+# См. [LICENSE](https://www.gnu.org/licenses/gpl-3.0.html) для подробностей.
+#
+# Ты вольен использовать, изменять, распространять и адаптировать этот код,
+# при условии соблюдения условий лицензии GPLv3.
+
+
+
+FROM ubuntu:22.04
+
+# Override this for your location
+ENV TZ=Australia/Brisbane
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TOOLCHAIN_DIR=/opt/klippy-env
+ENV USERNAME=klippy
+
+ARG TARGET_UID=1000
+ARG TARGET_GID=1000
+
+# Установка зависимостей
+RUN apt-get update -y && apt-get upgrade -y
+# RUN apt-get install -y sudo \
+#         libreadline-dev \
+#         libncurses5-dev \
+#         libncursesw5-dev \
+#         libelf-dev \
+#         libtool \
+#         libboost-all-dev \
+#         make \
+#         cmake \
+#         automake \
+#         autoconf \
+#         gcc-avr \
+#         avr-libc \
+#         binutils-avr \
+#         virtualenv \
+#         python3-dev \
+#         libffi-dev \
+#         build-essential \
+#         libusb-dev \
+#         libncurses-dev \
+#         wget \
+#         git \
+#         unzip \
+#         srecord \
+#         nginx \
+#         libsodium23
+
+RUN apt-get update && apt-get install -y \
+        sudo \
+        wget \
+        git \
+        unzip \
+        build-essential \
+        libreadline-dev \
+        libncurses5-dev \
+        libncursesw5-dev \
+        libncurses-dev \
+        libelf-dev \
+        libtool \
+        libboost-all-dev \
+        python3-dev \
+        libffi-dev \
+        virtualenv \
+        swig \
+        gcc-avr \
+        avr-libc \
+        binutils-avr \
+        srecord \
+        automake \
+        autoconf \
+        cmake \
+        make \
+        g++ \
+        libsodium23 \
+        libusb-dev \
+        nginx
+
+
+# Переименовывали пользователя в ubuntu24.04.
+# RUN usermod -l klippy $(getent passwd 1000 | cut -d: -f1) && \
+#     groupmod -n klippy $(getent group 1000 | cut -d: -f1) && \
+#     usermod -d /home/klippy -m klippy && \
+#     echo 'klippy ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/klippy && \
+#     chmod 0440 /etc/sudoers.d/klippy && \
+#     chown -R klippy:klippy /home/klippy
+
+# Создаём пользователя с заданными UID и GID
+RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
+    useradd -m -u ${TARGET_UID} -g ${TARGET_GID} -s /bin/bash ${USERNAME} && \
+    echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
+    chmod 0440 /etc/sudoers.d/${USERNAME} && \
+    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
+
+# Создаем скрип выполняемый при входе в контейнер
+
+#   проверяет доступный ли ~/init_history.sh
+#   который монтируется при запуске при необходимости и содержит
+#   предварительно заполненную историю, доступную по кнопкам ввер и вниз
+RUN echo '' >> /etc/bash.bashrc && \
+    echo '# Подгрузка bash-истории если доступна' >> /etc/bash.bashrc && \
+    echo 'if [ -f ~/init_history.sh ]; then' >> /etc/bash.bashrc && \
+    echo '  history -c' >> /etc/bash.bashrc && \
+    echo '  cat ~/init_history.sh > ~/.bash_history' >> /etc/bash.bashrc && \
+    echo '  history -r' >> /etc/bash.bashrc && \
+    echo 'fi' >> /etc/bash.bashrc && \
+    echo '' >> /etc/bash.bashrc
+
+RUN mkdir -p ${TOOLCHAIN_DIR}/scripts && \
+    chown -R ${USERNAME}:${USERNAME} ${TOOLCHAIN_DIR} && \
+    chmod -R 755 ${TOOLCHAIN_DIR}
+
+WORKDIR $TOOLCHAIN_DIR
+
+# Копируем нужный скрипт из scripts/
+#COPY scripts/ci-install.sh /tmp/ci-install.sh
+
+# Патчим в /tmp и возвращаем в ./scripts
+# RUN sed -E 's/sudo //g; s/apt-get install +/apt-get install -y /g' \
+#     /tmp/ci-install.sh > $TOOLCHAIN_DIR/scripts/ci-install.sh
+
+COPY scripts/tst/default.conf /etc/nginx/conf.d/default.conf
+COPY scripts/tst/index.html /var/www/html/index.html
+
+COPY scripts/klippy-requirements.txt ./scripts/klippy-requirements.txt
+
+RUN virtualenv -p python3 /opt/klippy-env && \
+    ./bin/pip install -r ./scripts/klippy-requirements.txt
+
+
+RUN git clone https://github.com/Arksine/moonraker.git /moonraker && \
+    ./bin/pip install \
+        -r /moonraker/scripts/moonraker-requirements.txt
+
+COPY scripts/tst/mooraker.conf /moonraker/moonraker.conf
+
+
+RUN git clone git://git.savannah.nongnu.org/simulavr.git && \
+    cd simulavr && \
+    make python && \
+    make build
+ENV PATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr:${PATH}"
+ENV PYTHONPATH=${TOOLCHAIN_DIR}/simulavr/build/pysimulavr/
+
+
+
+
+# Чистим от лишнего
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV PATH="/klipper:${PATH}"
+
+USER ${USERNAME}
+RUN git config --global --add safe.directory /moonraker
+
+WORKDIR /klipper
+
+#CMD ["/bin/bash"]
+CMD ["sudo nginx", "-g", "daemon off;"]
