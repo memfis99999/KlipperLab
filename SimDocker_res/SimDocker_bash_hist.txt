@@ -9,6 +9,10 @@ make menuconfig
 make clean
 make
 scripts/check_whitespace.sh
-/opt/klippy-env/bin/python /moonraker/moonraker/moonraker.py -c /moonraker/moonraker.conf
+nohup /opt/klippy-env/bin/python /moonraker/moonraker/moonraker.py -c /config/moonraker.conf > ~/moonraker.log 2>&1 &
+pkill -f moonraker.py
 /klipper/scripts/avrsim.py /klipper/out/klipper.elf -t PORTA.PORT,PORTC.PORT
-sudo nginx
+sudo nginx -c /config/nginx.conf &
+ps aux | grep nginx
+sudo nginx -s stop
+sudo nginx -s reload

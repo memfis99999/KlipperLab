@@ -1,8 +1,8 @@
 #!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-KLIPPER_HOST_PATH="$(cd "$SCRIPT_DIR/.." && pwd)"
-HISTORY_FILE="$SCRIPT_DIR/EnvDocker_bash_hist.txt"
+KLIPPER_HOST_PATH="$(cd "$SCRIPT_DIR/../klipper" && pwd)"
+HISTORY_FILE="./EnvDocker_bash_hist.txt"
 
 echo "==> Монтируем: $KLIPPER_HOST_PATH в /klipper"
 echo "==> История команд: $HISTORY_FILE"
@@ -29,11 +29,11 @@ else
   CMD=$(printf "%q " "$@")
 fi
 
-# echo "$SCRIPT_DIR"
-# echo "$KLIPPER_HOST_PATH"
-# echo "$HISTORY_FILE"
-# echo "$CONTAINER_CMD"
-# echo "${DOCKER_RUN_OPTS[@]}"
+# echo "SCRIPT_DIR = ${SCRIPT_DIR}"
+# echo "KLIPPER_HOST_PATH = ${KLIPPER_HOST_PATH}"
+# echo "HISTORY_FILE = ${HISTORY_FILE}"
+# echo "CONTAINER_CMD = ${CONTAINER_CMD}"
+# echo "DOCKER_RUN_OPTS = ${DOCKER_RUN_OPTS[@]}"
 
 #set -x
 echo "==> Запуск интерактивной оболочки"

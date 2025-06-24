@@ -11,5 +11,5 @@ sudo usermod -aG docker $USER
 docker build \
   --build-arg TARGET_UID=$TARGET_UID \
   --build-arg TARGET_GID=$TARGET_GID \
-  -f "$SCRIPT_DIR/SimDocker_file" \
-  -t klipper-simulator-env "$SCRIPT_DIR/.."
+  -f "${SCRIPT_DIR}/SimDocker_file" \
+  -t klipper-simulator-env "${SCRIPT_DIR}"

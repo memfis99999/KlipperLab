@@ -13,7 +13,7 @@
 FROM ubuntu:22.04
 
 # Override this for your location
-ENV TZ=Australia/Brisbane
+#ENV TZ=Australia/Brisbane
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TOOLCHAIN_DIR=/opt/klippy-env
@@ -22,36 +22,14 @@ ENV USERNAME=klippy
 ARG TARGET_UID=1000
 ARG TARGET_GID=1000
 
+ARG GH_KL_SC=https://raw.githubusercontent.com/Klipper3d/klipper/master/scripts
+ARG GH_MOONRAKER=https://github.com/Arksine/moonraker.git
+ARG GH_SIMAVR=git://git.savannah.nongnu.org/simulavr.git
+ARG GH_FLUIDD=https://github.com/fluidd-core/fluidd/releases/latest/download/fluidd.zip
+
 # Установка зависимостей
 RUN apt-get update -y && apt-get upgrade -y
-# RUN apt-get install -y sudo \
-#         libreadline-dev \
-#         libncurses5-dev \
-#         libncursesw5-dev \
-#         libelf-dev \
-#         libtool \
-#         libboost-all-dev \
-#         make \
-#         cmake \
-#         automake \
-#         autoconf \
-#         gcc-avr \
-#         avr-libc \
-#         binutils-avr \
-#         virtualenv \
-#         python3-dev \
-#         libffi-dev \
-#         build-essential \
-#         libusb-dev \
-#         libncurses-dev \
-#         wget \
-#         git \
-#         unzip \
-#         srecord \
-#         nginx \
-#         libsodium23
-
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
         sudo \
         wget \
         git \
@@ -79,7 +57,8 @@ RUN apt-get update && apt-get install -y \
         g++ \
         libsodium23 \
         libusb-dev \
-        nginx
+        nginx \
+        curl
 
 
 # Переименовывали пользователя в ubuntu24.04.
@@ -102,53 +81,38 @@ RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
 #   проверяет доступный ли ~/init_history.sh
 #   который монтируется при запуске при необходимости и содержит
 #   предварительно заполненную историю, доступную по кнопкам ввер и вниз
-RUN echo '' >> /etc/bash.bashrc && \
-    echo '# Подгрузка bash-истории если доступна' >> /etc/bash.bashrc && \
-    echo 'if [ -f ~/init_history.sh ]; then' >> /etc/bash.bashrc && \
-    echo '  history -c' >> /etc/bash.bashrc && \
-    echo '  cat ~/init_history.sh > ~/.bash_history' >> /etc/bash.bashrc && \
-    echo '  history -r' >> /etc/bash.bashrc && \
-    echo 'fi' >> /etc/bash.bashrc && \
-    echo '' >> /etc/bash.bashrc
+# Копируем файл init_history.sh, если он есть
+#COPY SimDocker_res/bash_bashrc /tmp/bash_bashrc.sh
 
-RUN mkdir -p ${TOOLCHAIN_DIR}/scripts && \
+RUN echo "/config/autostart.sh" >> /etc/bash.bashrc && \
+    mkdir -p ${TOOLCHAIN_DIR}/scripts && \
     chown -R ${USERNAME}:${USERNAME} ${TOOLCHAIN_DIR} && \
     chmod -R 755 ${TOOLCHAIN_DIR}
 
 WORKDIR $TOOLCHAIN_DIR
 
-# Копируем нужный скрипт из scripts/
-#COPY scripts/ci-install.sh /tmp/ci-install.sh
-
-# Патчим в /tmp и возвращаем в ./scripts
-# RUN sed -E 's/sudo //g; s/apt-get install +/apt-get install -y /g' \
-#     /tmp/ci-install.sh > $TOOLCHAIN_DIR/scripts/ci-install.sh
-
-COPY scripts/tst/default.conf /etc/nginx/conf.d/default.conf
-COPY scripts/tst/index.html /var/www/html/index.html
-
-COPY scripts/klippy-requirements.txt ./scripts/klippy-requirements.txt
-
-RUN virtualenv -p python3 /opt/klippy-env && \
+RUN wget ${GH_KL_SC}/klippy-requirements.txt \
+        -O ./scripts/klippy-requirements.txt && \
+    virtualenv -p python3 /opt/klippy-env && \
     ./bin/pip install -r ./scripts/klippy-requirements.txt
 
-
-RUN git clone https://github.com/Arksine/moonraker.git /moonraker && \
+RUN git clone ${GH_MOONRAKER} /moonraker && \
     ./bin/pip install \
         -r /moonraker/scripts/moonraker-requirements.txt
 
-COPY scripts/tst/mooraker.conf /moonraker/moonraker.conf
-
-
-RUN git clone git://git.savannah.nongnu.org/simulavr.git && \
+RUN git clone ${GH_SIMAVR} && \
     cd simulavr && \
     make python && \
     make build
+    
+RUN mkdir -p /var/www/fluidd && \
+    cd /var/www/fluidd && \
+    wget ${GH_FLUIDD} && \
+    unzip fluidd.zip && \
+    rm fluidd.zip
+
 ENV PATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr:${PATH}"
 ENV PYTHONPATH=${TOOLCHAIN_DIR}/simulavr/build/pysimulavr/
-
-
-
 
 # Чистим от лишнего
 RUN apt-get clean && \
@@ -159,7 +123,8 @@ ENV PATH="/klipper:${PATH}"
 USER ${USERNAME}
 RUN git config --global --add safe.directory /moonraker
 
+#RUN mkdir -p /home/klippy/nginx
+
 WORKDIR /klipper
 
-#CMD ["/bin/bash"]
-CMD ["sudo nginx", "-g", "daemon off;"]
+CMD ["/bin/bash"]

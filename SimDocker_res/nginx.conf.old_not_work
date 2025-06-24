@@ -1,0 +1,32 @@
+events {}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    server {
+        listen 80;
+        server_name localhost;
+
+        # ✅ Fluidd UI (расположен в /var/www/fluidd)
+        location /fluidd/ {
+            root /var/www/;
+            index index.html;
+            try_files $uri $uri/ /fluidd/index.html;
+        }
+
+        # ✅ Moonraker API (работает на 7125)
+        location /printer/ {
+            proxy_pass http://localhost:7125/;
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
+            proxy_buffering off;
+            proxy_request_buffering off;
+        }
+
+        # ✅ Корневой путь — редирект на /fluidd/
+        location / {
+            return 302 /fluidd/;
+        }
+    }
+}

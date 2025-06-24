@@ -1,7 +1,7 @@
 #Dockerfile to create container to build enviroment
 # for Klipper
 #
-#  https://github.com/memfis99999
+#  https://github.com/memfis99999/KlipperLab
 # Этот проект распространяется под лицензией **GNU General Public License v3.0 (GPLv3)**.
 # См. [LICENSE](https://www.gnu.org/licenses/gpl-3.0.html) для подробностей.
 #
@@ -19,15 +19,18 @@ ENV USERNAME=klippy
 ARG TARGET_UID=1000
 ARG TARGET_GID=1000
 
+ARG GH_KL_SC=https://raw.githubusercontent.com/Klipper3d/klipper/master/scripts
+
 # Установка зависимостей
 RUN apt-get update -y && apt-get upgrade -y
-RUN apt-get install -y sudo \
-      make \
-      cmake \
-      wget \
-      git \
-      unzip \
-      srecord
+RUN apt-get install -y \
+    sudo \
+    make \
+    cmake \
+    wget \
+    git \
+    unzip \
+    srecord
 
 # Переименовывали пользователя в ubuntu24.04.
 # RUN usermod -l klippy $(getent passwd 1000 | cut -d: -f1) && \
@@ -46,24 +49,22 @@ RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
 
 # Создаем скрип выполняемый при входе в контейнер
 # копируем папку ci_build, если ее нет в /klipper
-RUN echo '' >> /etc/bash.bashrc && \
-    echo '# Копирование ci_build при первом запуске' >> /etc/bash.bashrc && \
-    echo 'if [ ! -d /klipper/ci_build ]; then' >> /etc/bash.bashrc && \
-    echo '  echo "[INFO] Копирую ci_build в /klipper..."' >> /etc/bash.bashrc && \
-    echo '  cp -r ${TOOLCHAIN_DIR}/ci_build/ /klipper' >> /etc/bash.bashrc && \
-    echo 'fi' >> /etc/bash.bashrc
+RUN cat << 'EOF' >> /etc/bash.bashrc
 
-#   проверяет доступный ли ~/init_history.sh
-#   который монтируется при запуске при необходимости и содержит
-#   предварительно заполненную историю, доступную по кнопкам ввер и вниз
-RUN echo '' >> /etc/bash.bashrc && \
-    echo '# Подгрузка bash-истории если доступна' >> /etc/bash.bashrc && \
-    echo 'if [ -f ~/init_history.sh ]; then' >> /etc/bash.bashrc && \
-    echo '  history -c' >> /etc/bash.bashrc && \
-    echo '  cat ~/init_history.sh > ~/.bash_history' >> /etc/bash.bashrc && \
-    echo '  history -r' >> /etc/bash.bashrc && \
-    echo 'fi' >> /etc/bash.bashrc && \
-    echo '' >> /etc/bash.bashrc
+# --- Copy ci_build to /klipper on first container start ---
+if [ ! -d /klipper/ci_build ]; then
+  echo "[INFO] Copying ci_build into /klipper..."
+  cp -r ${TOOLCHAIN_DIR}/ci_build/ /klipper
+fi
+
+# --- Load bash history from ~/init_history.sh if available ---
+if [ -f ~/init_history.sh ]; then
+  history -c
+  cp ~/init_history.sh > ~/.bash_history
+  history -r
+fi
+
+EOF
 
 RUN mkdir -p ${TOOLCHAIN_DIR}/scripts && \
     chown -R ${USERNAME}:${USERNAME} ${TOOLCHAIN_DIR} && \
@@ -71,14 +72,14 @@ RUN mkdir -p ${TOOLCHAIN_DIR}/scripts && \
 
 WORKDIR $TOOLCHAIN_DIR
 
-# Копируем нужный скрипт из scripts/
-COPY scripts/ci-install.sh /tmp/ci-install.sh
-
+# Копируем нужный скрипт в scripts/
 # Патчим в /tmp и возвращаем в ./scripts
-RUN sed -E 's/sudo //g; s/apt-get install +/apt-get install -y /g' \
-    /tmp/ci-install.sh > $TOOLCHAIN_DIR/scripts/ci-install.sh
-
-COPY scripts/klippy-requirements.txt ./scripts/klippy-requirements.txt
+RUN wget ${GH_KL_SC}/ci-install.sh \
+        -O /tmp/ci-install.sh && \
+    sed -E 's/sudo //g; s/apt-get install +/apt-get install -y /g' \
+    /tmp/ci-install.sh > $TOOLCHAIN_DIR/scripts/ci-install.sh && \
+    wget ${GH_KL_SC}/klippy-requirements.txt \
+        -O ./scripts/klippy-requirements.txt
 
 # Запуск скрипта установки необходимого окружения
 RUN bash ./scripts/ci-install.sh
