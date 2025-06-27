@@ -1,0 +1,5 @@
+0. Add script to compile all firmware to Kreality K1
+
+1. Update EnvDocker_README.md
+2. Update README.md
+3. Update .bash_aliases

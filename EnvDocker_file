@@ -12,6 +12,10 @@
 
 FROM ubuntu:22.04
 
+LABEL maintainer="memfis99999" \
+      description="Klipper build environment based on Ubuntu 22.04" \
+      version="1.0"
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TOOLCHAIN_DIR=/opt/klipper-toolchains
 ENV USERNAME=klippy
@@ -43,30 +47,14 @@ RUN apt-get install -y \
 # Создаём пользователя с заданными UID и GID
 RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
     useradd -m -u ${TARGET_UID} -g ${TARGET_GID} -s /bin/bash ${USERNAME} && \
-    echo '${USERNAME} ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/${USERNAME} && \
+    echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME} && \
     chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
 
-# Создаем скрип выполняемый при входе в контейнер
-# копируем папку ci_build, если ее нет в /klipper
-RUN cat << 'EOF' >> /etc/bash.bashrc
 
-# --- Copy ci_build to /klipper on first container start ---
-if [ ! -d /klipper/ci_build ]; then
-  echo "[INFO] Copying ci_build into /klipper..."
-  cp -r ${TOOLCHAIN_DIR}/ci_build/ /klipper
-fi
-
-# --- Load bash history from ~/init_history.sh if available ---
-if [ -f ~/init_history.sh ]; then
-  history -c
-  cp ~/init_history.sh > ~/.bash_history
-  history -r
-fi
-
-EOF
-
-RUN mkdir -p ${TOOLCHAIN_DIR}/scripts && \
+RUN echo "/config/autostart.sh" >> /etc/bash.bashrc && \
+    printf '%s\n' 'PS1="\[\e[1;37;41m\]Klipper Building Environment\[\e[0m\]\n\[\e]0;\u@\h: \w\a\]\${debian_chroot:+(\$debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/${USERNAME}/.bashrc && \
+    mkdir -p ${TOOLCHAIN_DIR}/scripts && \
     chown -R ${USERNAME}:${USERNAME} ${TOOLCHAIN_DIR} && \
     chmod -R 755 ${TOOLCHAIN_DIR}
 
@@ -74,15 +62,12 @@ WORKDIR $TOOLCHAIN_DIR
 
 # Копируем нужный скрипт в scripts/
 # Патчим в /tmp и возвращаем в ./scripts
-RUN wget ${GH_KL_SC}/ci-install.sh \
-        -O /tmp/ci-install.sh && \
-    sed -E 's/sudo //g; s/apt-get install +/apt-get install -y /g' \
-    /tmp/ci-install.sh > $TOOLCHAIN_DIR/scripts/ci-install.sh && \
-    wget ${GH_KL_SC}/klippy-requirements.txt \
-        -O ./scripts/klippy-requirements.txt
+# Запуск скрипта установки необходимого окруженияCOPY klipper/scripts/klippy-requirements.txt ./scripts/
+COPY klipper/scripts/ci-install.sh /tmp/ci-install.sh
 
-# Запуск скрипта установки необходимого окружения
-RUN bash ./scripts/ci-install.sh
+RUN sed -E 's/sudo //g; s/apt-get install +/apt-get install -y /g' \
+    /tmp/ci-install.sh > $TOOLCHAIN_DIR/scripts/ci-install.sh && \
+    bash ./scripts/ci-install.sh
 
 # Чистим от лишнего
 RUN apt-get clean && \
