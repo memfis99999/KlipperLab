@@ -1,8 +1,6 @@
+SimDocker_res/out
 ci_build
 out
 *.so
 *.pyc
-.config
-.config.old
-klippy/.version
 *.log

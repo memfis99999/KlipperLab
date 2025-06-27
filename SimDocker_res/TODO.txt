@@ -1,0 +1,31 @@
+0. Update simulavr.cfg
+
+1. Update SimDocker_README.md
+2. Update README.md
+3. Update .bash_aliases
+4. Add Mainsail
+
+ fluidd warnings found.
+
+    [virtual_sdcard] not found in printer configuration.
+    [pause_resume] not found in printer configuration.
+    [display_status] is required if you do not have a [display] defined.
+    CANCEL_PRINT macro not found in configuration.
+
+Klipper warnings found.
+
+    MCU 'mcu' configured for 16Mhz but running at 1Mhz!
+
+Moonraker warnings found.
+
+    [file_manager]: Option 'config_path' is deprecated, see the configuration documention at https://moonraker.readthedocs.io/en/latest/configuration/
+    Unparsed config option 'klippy_uds_path: /tmp/klippy_uds' detected in section [server]. This may be an option no longer available or could be the result of a module that failed to load. In the future this will result in a startup error.
+    Unparsed config option 'namespace: fluidd' detected in section [database]. This may be an option no longer available or could be the result of a module that failed to load. In the future this will result in a startup error.
+    [machine]: DBus Connection Not available, systemd service tracking and actions are disabled
+    file_manager: Klipper configuration file not located in 'config' folder.
+
+    Klipper Config Path: /config/simulavr.cfg
+
+    Config Folder: /home/klippy/printer_data/config
+
+Fluidd setup requirements can be found here.
