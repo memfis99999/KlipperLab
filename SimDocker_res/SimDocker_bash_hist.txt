@@ -1,18 +1,17 @@
 cd /klipper
 clear
-make gd23_defconfig
-make gd32_defconfig
-make stm32_defconfig
 make sim_defconfig
 make V=1 2>&1 | tee build.log
 make menuconfig
 make clean
 make
 scripts/check_whitespace.sh
-nohup /opt/klippy-env/bin/python /moonraker/moonraker/moonraker.py -c /config/moonraker.conf > ~/moonraker.log 2>&1 &
-pkill -f moonraker.py
-/klipper/scripts/avrsim.py /klipper/out/klipper.elf -t PORTA.PORT,PORTC.PORT
 sudo nginx -c /config/nginx.conf &
 ps aux | grep nginx
 sudo nginx -s stop
 sudo nginx -s reload
+nohup /opt/klippy-env/bin/python /moonraker/moonraker/moonraker.py -c /config/moonraker.conf > ~/moonraker.log 2>&1 &
+pkill -f moonraker.py
+nohup nice -n 5 /opt/klippy-env/bin/python /klipper/scripts/avrsim.py /klipper/out/klipper.elf > ~/simulavr.log 2>&1 &
+/opt/klippy-env/bin/python klippy/klippy.py config/generic-simulavr.cfg -a /tmp/klippy_uds -v
+

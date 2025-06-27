@@ -13,3 +13,4 @@ if [ -f /config/SimDocker_res/SimDocker_bash_hist.txt ]; then
 fi
 
 ./config/autostart.sh
+

@@ -85,6 +85,7 @@ RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
 #COPY SimDocker_res/bash_bashrc /tmp/bash_bashrc.sh
 
 RUN echo "/config/autostart.sh" >> /etc/bash.bashrc && \
+    printf '%s\n' 'PS1="\[\e[1;30;42m\]Klipper SimDocker Environment\[\e[0m\]\n\[\e]0;\u@\h: \w\a\]\${debian_chroot:+(\$debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/${USERNAME}/.bashrc && \
     mkdir -p ${TOOLCHAIN_DIR}/scripts && \
     chown -R ${USERNAME}:${USERNAME} ${TOOLCHAIN_DIR} && \
     chmod -R 755 ${TOOLCHAIN_DIR}
@@ -104,7 +105,7 @@ RUN git clone ${GH_SIMAVR} && \
     cd simulavr && \
     make python && \
     make build
-    
+
 RUN mkdir -p /var/www/fluidd && \
     cd /var/www/fluidd && \
     wget ${GH_FLUIDD} && \
@@ -112,7 +113,7 @@ RUN mkdir -p /var/www/fluidd && \
     rm fluidd.zip
 
 ENV PATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr:${PATH}"
-ENV PYTHONPATH=${TOOLCHAIN_DIR}/simulavr/build/pysimulavr/
+ENV PYTHONPATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr/"
 
 # Чистим от лишнего
 RUN apt-get clean && \
