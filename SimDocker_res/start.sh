@@ -10,8 +10,10 @@ mkdir -p ~/printer_data/logs ~/printer_data/comms
 
 # Компилируем прошивку для AtMega644 для симуляции в simulavr
 echo "🔧 Компилируем прошивку для AtMega644..."
-
-
+LAST_DIR=$(pwd)
+cd /klipper
+make OUT=~/out/ KCONFIG_CONFIG=/config/.config_simulavr
+cd ${LAST_DIR}
 
 # Запуск nginx (если не запущен)
 echo "🌐 Запускаем nginx..."
@@ -26,13 +28,13 @@ nohup ${TOOLCHAIN_DIR}/bin/python /moonraker/moonraker/moonraker.py \
 # Запуск SimulAVR
 echo "🖥️ Запуск симуляции AVR... Logging to ~/simulavr.log"
 nohup nice -n 5 ${TOOLCHAIN_DIR}/bin/python /klipper/scripts/avrsim.py \
-    /klipper/out/klipper.elf > ~/simulavr.log 2>&1 &
+    ~/out/klipper.elf > ~/simulavr.log 2>&1 &
 
 # Ждем завершения компиляции прошивки
 sleep 2
 
 # Запуск Klipper
 echo "🔄 Запуск Klipper..."
-${TOOLCHAIN_DIR}/bin/python klippy/klippy.py config/generic-simulavr.cfg \
+${TOOLCHAIN_DIR}/bin/python klippy/klippy.py /config/simulavr.cfg \
     -a /tmp/klippy_uds -v
 

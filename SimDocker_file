@@ -9,11 +9,11 @@
 # при условии соблюдения условий лицензии GPLv3.
 
 
-
 FROM ubuntu:22.04
 
-# Override this for your location
-#ENV TZ=Australia/Brisbane
+LABEL maintainer="memfis99999" \
+      description="Klipper simulation environment based on Ubuntu 22.04" \
+      version="1.0"
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TOOLCHAIN_DIR=/opt/klippy-env
@@ -76,14 +76,6 @@ RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME} && \
     chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
 
-# Создаем скрип выполняемый при входе в контейнер
-
-#   проверяет доступный ли ~/init_history.sh
-#   который монтируется при запуске при необходимости и содержит
-#   предварительно заполненную историю, доступную по кнопкам ввер и вниз
-# Копируем файл init_history.sh, если он есть
-#COPY SimDocker_res/bash_bashrc /tmp/bash_bashrc.sh
-
 RUN echo "/config/autostart.sh" >> /etc/bash.bashrc && \
     printf '%s\n' 'PS1="\[\e[1;30;42m\]Klipper SimDocker Environment\[\e[0m\]\n\[\e]0;\u@\h: \w\a\]\${debian_chroot:+(\$debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/${USERNAME}/.bashrc && \
     mkdir -p ${TOOLCHAIN_DIR}/scripts && \
@@ -92,9 +84,9 @@ RUN echo "/config/autostart.sh" >> /etc/bash.bashrc && \
 
 WORKDIR $TOOLCHAIN_DIR
 
-RUN wget ${GH_KL_SC}/klippy-requirements.txt \
-        -O ./scripts/klippy-requirements.txt && \
-    virtualenv -p python3 /opt/klippy-env && \
+COPY klipper/scripts/klippy-requirements.txt ./scripts/
+
+RUN virtualenv -p python3 /opt/klippy-env && \
     ./bin/pip install -r ./scripts/klippy-requirements.txt
 
 RUN git clone ${GH_MOONRAKER} /moonraker && \
