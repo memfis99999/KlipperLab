@@ -20,6 +20,7 @@ DOCKER_RUN_OPTS=(
   -e TERM=xterm-256color
   -v "${KLIPPER_HOST_PATH}:/klipper"
   -v "${CONFIG_PATH}:/config"
+  -v /etc/localtime:/etc/localtime:ro
 )
 
 if [ $# -eq 0 ]; then
