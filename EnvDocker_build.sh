@@ -1,14 +1,46 @@
 #!/bin/bash
+# ┌────────────────────────────────────────────────────────────┐
+# │ KlipperLab — Klipper Firmware Build and Test Environment   │
+# │ Author: Yurii (https://github.com/memfis99999)             │
+# │ License: GNU GPLv3                                         │
+# │ Project started: 2025                                      │
+# └────────────────────────────────────────────────────────────┘
+# Description:
+#   Builds the Docker image required for compiling Klipper firmware
+#   in a controlled environment.
+#
+#   Part of the KlipperLab project.
+#   Repository: https://github.com/memfis99999/KlipperLab
+#
+# Location:
+#   This script should reside alongside the 'klipper' directory,
+#   not inside it. Example structure:
+#
+#   /some-folder/
+#   ├── klipper/
+#   └── KlipperLab/
+#       └── EnvDocker_build.sh
+#
+# Notes:
+#   • Automatically adds current user to 'docker' group
+#   • Requires Docker to be installed and running
+#   • Image name: klipper-build-env
+#
+# License:
+#   This project is licensed under the GNU General Public License v3.0.
+#   You are free to use, modify, and distribute it under GPLv3 terms.
+#   See: https://www.gnu.org/licenses/gpl-3.0.html
+
 set -euo pipefail
 set -m 
 
-echo "🛠️ Starting Docker image build for Klipper environment..."
+echo "🛠️ Building Docker image for the Klipper firmware environment..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PARENT_DIR="$(dirname "$SCRIPT_DIR")"
+PARENT_DIR="$(dirname "${SCRIPT_DIR}")"
 
 if [[ ! -d "${PARENT_DIR}/klipper" ]]; then
-  echo "Error: Directory '${PARENT_DIR}/klipper' not found!"
+  echo "❌ Error: Required directory '${PARENT_DIR}/klipper' not found."
   echo "PARENT_DIR = ${PARENT_DIR}"
   echo "SCRIPT_DIR = ${SCRIPT_DIR}"
   exit 1

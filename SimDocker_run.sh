@@ -37,6 +37,6 @@ fi
 # echo "$CONFIG_PATH"
 # echo "$CONTAINER_CMD"
 # echo "${DOCKER_RUN_OPTS[@]}"
-#set -x
+# set -x
 
 docker run ${DOCKER_RUN_OPTS[@]} klipper-simulator-env bash -c "${CMD}"

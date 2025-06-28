@@ -1,14 +1,30 @@
-#Dockerfile to create container to build enviroment
-# for Klipper
+# ┌────────────────────────────────────────────────────────────┐
+# │ KlipperLab — Klipper Firmware Build and Test Environment   │
+# │ Author: Yurii (https://github.com/memfis99999)             │
+# │ License: GNU GPLv3                                         │
+# │ Project started: 2025                                      │
+# └────────────────────────────────────────────────────────────┘
+# Description:
+#   Dockerfile for building a containerized environment to
+#   compile and package Klipper firmware safely and reproducibly.
+#   Based on Ubuntu 22.04.
 #
-#  https://github.com/memfis99999/KlipperLab
-# Этот проект распространяется под лицензией **GNU General Public License v3.0 (GPLv3)**.
-# См. [LICENSE](https://www.gnu.org/licenses/gpl-3.0.html) для подробностей.
+#   Part of the KlipperLab project.
+#   Repository: https://github.com/memfis99999/KlipperLab
 #
-# Ты вольен использовать, изменять, распространять и адаптировать этот код,
-# при условии соблюдения условий лицензии GPLv3.
-
-
+# Location:
+#   This script should reside alongside the 'klipper' directory,
+#   not inside it. Example structure:
+#
+#   /some-folder/
+#   ├── klipper/
+#   └── KlipperLab/
+#       └── EnvDocker_file
+#
+# License:
+#   This project is licensed under the GNU General Public License v3.0.
+#   You are free to use, modify, and distribute it under GPLv3 terms.
+#   See: https://www.gnu.org/licenses/gpl-3.0.html
 
 FROM ubuntu:22.04
 
@@ -25,7 +41,7 @@ ARG TARGET_GID=1000
 
 ARG GH_KL_SC=https://raw.githubusercontent.com/Klipper3d/klipper/master/scripts
 
-# Установка зависимостей
+# Install required dependencies
 RUN apt-get update -y && apt-get upgrade -y
 RUN apt-get install -y \
     sudo \
@@ -36,7 +52,8 @@ RUN apt-get install -y \
     unzip \
     srecord
 
-# Переименовывали пользователя в ubuntu24.04.
+# Note: Previously renamed the default user in Ubuntu 24.04
+# Commented out, retained for reference:
 # RUN usermod -l klippy $(getent passwd 1000 | cut -d: -f1) && \
 #     groupmod -n klippy $(getent group 1000 | cut -d: -f1) && \
 #     usermod -d /home/klippy -m klippy && \
@@ -44,14 +61,14 @@ RUN apt-get install -y \
 #     chmod 0440 /etc/sudoers.d/klippy && \
 #     chown -R klippy:klippy /home/klippy
 
-# Создаём пользователя с заданными UID и GID
+# Create a user with specified UID and GID
 RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
     useradd -m -u ${TARGET_UID} -g ${TARGET_GID} -s /bin/bash ${USERNAME} && \
     echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME} && \
     chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
 
-
+# Set up environment: autostart and visual prompt
 RUN echo "/config/autostart.sh" >> /etc/bash.bashrc && \
     printf '%s\n' 'PS1="\[\e[1;37;41m\]Klipper Building Environment\[\e[0m\]\n\[\e]0;\u@\h: \w\a\]\${debian_chroot:+(\$debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/${USERNAME}/.bashrc && \
     mkdir -p ${TOOLCHAIN_DIR}/scripts && \
@@ -60,25 +77,26 @@ RUN echo "/config/autostart.sh" >> /etc/bash.bashrc && \
 
 WORKDIR $TOOLCHAIN_DIR
 
-# Копируем нужный скрипт в scripts/
-# Патчим в /tmp и возвращаем в ./scripts
-# Запуск скрипта установки необходимого окружения
+# Copy Klipper scripts into the image
 COPY klipper/scripts/klippy-requirements.txt ./scripts/
 COPY klipper/scripts/ci-install.sh /tmp/ci-install.sh
 
+# Patch the original install script (remove sudo, ensure -y)
 RUN sed -E 's/sudo //g; s/apt-get install +/apt-get install -y /g' \
     /tmp/ci-install.sh > $TOOLCHAIN_DIR/scripts/ci-install.sh && \
     bash ./scripts/ci-install.sh
 
-# Чистим от лишнего
+# Cleanup to reduce image size
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Extend environment PATH with toolchains and Python environments
 ENV PATH="/klipper/ci_build/or1k-elf/bin:\
-/klipper/ci_build/pru-elf/bin:\
-/klipper/ci_build/python-env/bin:\
-/klipper/ci_build/python2-env/bin:${PATH}"
+          /klipper/ci_build/pru-elf/bin:\
+          /klipper/ci_build/python-env/bin:\
+          /klipper/ci_build/python2-env/bin:${PATH}"
 
+# Switch to the non-root build user
 USER ${USERNAME}
 
 WORKDIR /klipper

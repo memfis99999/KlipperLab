@@ -24,20 +24,3 @@ alias moonraker-stop='pkill -f moonraker.py'
 
 ### AVR Симуляция ###
 alias sim-avr='nohup nice -n 5 /opt/klippy-env/bin/python /klipper/scripts/avrsim.py /klipper/out/klipper.elf > ~/simulavr.log 2>&1 &'
-
-### Всё вместе ###
-#alias dev-start='nginx-start && moonraker-start && sim-avr'
-
-# 📌 Как пользоваться
-# - Сохрани файл как ~/.bash_aliases в домашней директории.
-# - Убедись, что в твоем ~/.bashrc есть строка:
-# if [ -f ~/.bash_aliases ]; then
-#     . ~/.bash_aliases
-# fi
-# - Обычно она уже есть.
-# - Применить изменения:
-# source ~/.bashrc
-# - Теперь ты можешь использовать команды вроде:
-# nginx-status
-# nginx-test
-# nginx-errorlog
