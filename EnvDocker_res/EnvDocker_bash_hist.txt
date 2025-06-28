@@ -8,4 +8,4 @@ make V=1 2>&1 | tee build.log
 make menuconfig
 make clean
 make
-scripts/check_whitespace.sh
+scripts/check_whitespace.sh 2>&1 | tee check_whitespace.log

@@ -62,7 +62,8 @@ WORKDIR $TOOLCHAIN_DIR
 
 # Копируем нужный скрипт в scripts/
 # Патчим в /tmp и возвращаем в ./scripts
-# Запуск скрипта установки необходимого окруженияCOPY klipper/scripts/klippy-requirements.txt ./scripts/
+# Запуск скрипта установки необходимого окружения
+COPY klipper/scripts/klippy-requirements.txt ./scripts/
 COPY klipper/scripts/ci-install.sh /tmp/ci-install.sh
 
 RUN sed -E 's/sudo //g; s/apt-get install +/apt-get install -y /g' \

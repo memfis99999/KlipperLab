@@ -1,3 +1,5 @@
+EnvDocker_res/logs
+EnvDocker_res/FIRMWARE
 SimDocker_res/out
 ci_build
 out
