@@ -1,5 +1,5 @@
 
-# 🛠️ KlipperLab — Firmware Build Environment (EnvDocker)
+# 🛠️ KlipperLab — Firmware Build and Test Environment (EnvDocker)
 
 [GitHub — Yurii](https://github.com/memfis99999)
 
@@ -76,7 +76,7 @@ Drop into an interactive shell in the container (no auto-scripts):
 ## 📁 Directory Structure
 
 ```tree
-./
+/your-workspace/
 ├── klipper/                  # Your local Klipper repo (see note below). Mounted as /klipper in the container.
 └── KlipperLab/               # This repository (EnvDocker build environment)
     ├── EnvDocker_build.sh*       # Build the firmware container
@@ -91,7 +91,7 @@ Drop into an interactive shell in the container (no auto-scripts):
     │   ├── EnvDocker_bash_hist.txt   # User bash history for the build container
     │   ├── FIRMWARE/                 # Created automatically. Stores compiled firmware
     │   │   └── Creality_K1/              # Firmware output, description, and dictionary files for debugging
-    │   ├── logs/                     # Created automatically. Find logs here
+    │   ├── log/                      # Created automatically. Find logs here
     │   ├── out/                      # Created automatically. Last compilation output (like Klipper's own 'out')
     │   ├── start.sh*                 # Auto-run script (if container started without arguments)
     │   ├── test.sh*                  # For user script testing and debugging only (not for CI)

@@ -33,7 +33,7 @@
 #   This script should reside alongside the 'klipper' directory,
 #   not inside it. Example structure:
 #
-#   /some-folder/
+#   /your-workspace/
 #   ├── klipper/
 #   └── KlipperLab/
 #       └── EnvDocker_run.sh*

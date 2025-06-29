@@ -1,3 +1,9 @@
+# ┌────────────────────────────────────────────────────────────┐
+# │ KlipperLab — Klipper Firmware Build and Test Environment   │
+# │ Author: Yurii (https://github.com/memfis99999)             │
+# │ License: GNU GPLv3                                         │
+# │ Project started: 2025                                      │
+# └────────────────────────────────────────────────────────────┘
 CONFIG_LOW_LEVEL_OPTIONS=y
 CONFIG_MACH_AVR=y
 CONFIG_AVR_SELECT=y

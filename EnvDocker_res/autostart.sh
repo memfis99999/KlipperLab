@@ -1,6 +1,6 @@
 #!/bin/bash
 # ┌────────────────────────────────────────────────────────────┐
-# │ KlipperLab — Firmware Build Environment for Klipper        │
+# │ KlipperLab — Klipper Firmware Build and Test Environment   │
 # │ Author: Yurii (https://github.com/memfis99999)             │
 # │ License: GNU GPLv3                                         │
 # │ Project started: 2025                                      │
@@ -10,6 +10,7 @@
 #     • Load predefined shell history
 #     • Load custom aliases
 #     • Copy the ci_build directory into /klipper on first run
+#     • Any additional user customizations (extend as needed)
 #
 #   Part of the KlipperLab project.
 #   Repository: https://github.com/memfis99999/KlipperLab
@@ -32,7 +33,7 @@
 #   This script should reside alongside the 'klipper' directory,
 #   not inside it. Example structure:
 #
-#   /some-folder/
+#   /your-workspace/
 #   ├── klipper/
 #   └── KlipperLab/
 #       └── EnvDocker_res/
@@ -75,3 +76,9 @@ if [ ! -d /klipper/ci_build ]; then
 else
   echo "ℹ️  ci_build already present; skipping copy."
 fi
+
+# ----- Place for your custom autostart logic -----
+# Add any additional environment setup or automation below
+
+# Example:
+# echo "Custom autostart actions go here..."

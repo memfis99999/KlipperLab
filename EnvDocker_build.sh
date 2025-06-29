@@ -16,7 +16,7 @@
 #   This script should reside alongside the 'klipper' directory,
 #   not inside it. Example structure:
 #
-#   /some-folder/
+#   /your-workspace/
 #   ├── klipper/
 #   └── KlipperLab/
 #       └── EnvDocker_build.sh
@@ -32,7 +32,7 @@
 #   See: https://www.gnu.org/licenses/gpl-3.0.html
 
 set -euo pipefail
-set -m 
+set -m
 
 echo "🛠️ Building Docker image for the Klipper firmware environment..."
 
@@ -56,4 +56,3 @@ docker build \
   --build-arg TARGET_GID=${TARGET_GID} \
   -f "${SCRIPT_DIR}/EnvDocker_file" \
   -t klipper-build-env "${PARENT_DIR}"
-  

@@ -1,13 +1,29 @@
-#Dockerfile to create container to build enviroment
-# for Klipper simulations
+# ┌────────────────────────────────────────────────────────────┐
+# │ KlipperLab — Klipper Firmware Build and Test Environment   │
+# │ Author: Yurii (https://github.com/memfis99999)             │
+# │ License: GNU GPLv3                                         │
+# │ Project started: 2025                                      │
+# └────────────────────────────────────────────────────────────┘
+# Description:
+#   Dockerfile for building the simulation/testing container
+#   for Klipper firmware, Moonraker, SimulAVR and Fluidd.
 #
-#  https://github.com/memfis99999
-# Этот проект распространяется под лицензией **GNU General Public License v3.0 (GPLv3)**.
-# См. [LICENSE](https://www.gnu.org/licenses/gpl-3.0.html) для подробностей.
+#   Part of the KlipperLab project.
+#   Repository: https://github.com/memfis99999/KlipperLab
 #
-# Ты вольен использовать, изменять, распространять и адаптировать этот код,
-# при условии соблюдения условий лицензии GPLv3.
-
+# Location:
+#   This script should reside alongside the 'klipper' directory,
+#   not inside it. Example structure:
+#
+#   /your-workspace/
+#   ├── klipper/
+#   └── KlipperLab/
+#       └── SimDocker_file
+#
+# License:
+#   This project is licensed under the GNU General Public License v3.0.
+#   You are free to use, modify, and distribute it under GPLv3 terms.
+#   See: https://www.gnu.org/licenses/gpl-3.0.html
 
 FROM ubuntu:22.04
 
@@ -27,7 +43,7 @@ ARG GH_MOONRAKER=https://github.com/Arksine/moonraker.git
 ARG GH_SIMAVR=git://git.savannah.nongnu.org/simulavr.git
 ARG GH_FLUIDD=https://github.com/fluidd-core/fluidd/releases/latest/download/fluidd.zip
 
-# Установка зависимостей
+# Install dependencies
 RUN apt-get update -y && apt-get upgrade -y
 RUN apt-get install -y \
         sudo \
@@ -60,22 +76,14 @@ RUN apt-get install -y \
         nginx \
         curl
 
-
-# Переименовывали пользователя в ubuntu24.04.
-# RUN usermod -l klippy $(getent passwd 1000 | cut -d: -f1) && \
-#     groupmod -n klippy $(getent group 1000 | cut -d: -f1) && \
-#     usermod -d /home/klippy -m klippy && \
-#     echo 'klippy ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/klippy && \
-#     chmod 0440 /etc/sudoers.d/klippy && \
-#     chown -R klippy:klippy /home/klippy
-
-# Создаём пользователя с заданными UID и GID
+# Create user with specified UID and GID
 RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
     useradd -m -u ${TARGET_UID} -g ${TARGET_GID} -s /bin/bash ${USERNAME} && \
     echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME} && \
     chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
 
+# Autostart custom shell logic, custom PS1, prepare toolchain dir
 RUN echo "/config/autostart.sh" >> /etc/bash.bashrc && \
     printf '%s\n' 'PS1="\[\e[1;30;42m\]Klipper SimDocker Environment\[\e[0m\]\n\[\e]0;\u@\h: \w\a\]\${debian_chroot:+(\$debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/${USERNAME}/.bashrc && \
     mkdir -p ${TOOLCHAIN_DIR}/scripts && \
@@ -84,20 +92,24 @@ RUN echo "/config/autostart.sh" >> /etc/bash.bashrc && \
 
 WORKDIR $TOOLCHAIN_DIR
 
+# Copy Klipper Python requirements for simulation
 COPY klipper/scripts/klippy-requirements.txt ./scripts/
 
 RUN virtualenv -p python3 /opt/klippy-env && \
     ./bin/pip install -r ./scripts/klippy-requirements.txt
 
+# Clone Moonraker and install Python requirements
 RUN git clone ${GH_MOONRAKER} /moonraker && \
     ./bin/pip install \
         -r /moonraker/scripts/moonraker-requirements.txt
 
+# Clone and build SimulAVR
 RUN git clone ${GH_SIMAVR} && \
     cd simulavr && \
     make python && \
     make build
 
+# Download and unpack Fluidd
 RUN mkdir -p /var/www/fluidd && \
     cd /var/www/fluidd && \
     wget ${GH_FLUIDD} && \
@@ -107,7 +119,7 @@ RUN mkdir -p /var/www/fluidd && \
 ENV PATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr:${PATH}"
 ENV PYTHONPATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr/"
 
-# Чистим от лишнего
+# Cleanup
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -115,8 +127,6 @@ ENV PATH="/klipper:${PATH}"
 
 USER ${USERNAME}
 RUN git config --global --add safe.directory /moonraker
-
-#RUN mkdir -p /home/klippy/nginx
 
 WORKDIR /klipper
 

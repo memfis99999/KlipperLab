@@ -1,6 +1,6 @@
 #!/bin/bash
 # ┌────────────────────────────────────────────────────────────┐
-# │ KlipperLab — Firmware Build Environment for Klipper        │
+# │ KlipperLab — Klipper Firmware Build and Test Environment   │
 # │ Author: Yurii (https://github.com/memfis99999)             │
 # │ License: GNU GPLv3                                         │
 # │ Project started: 2025                                      │
@@ -20,7 +20,7 @@
 #   This script should reside alongside the 'klipper' directory,
 #   not inside it. Example structure:
 #
-#   /some-folder/
+#   /your-workspace/
 #   ├── klipper/
 #   └── KlipperLab/
 #       └── EnvDocker_res/
@@ -38,7 +38,7 @@ SECONDS=0
 CONFIGS_DIR="/config/configs/Creality_K1"
 OUT_DIR="/config/out"
 FW_DIR="/config/FIRMWARE/Creality_K1"
-LOG_DIR="/config/logs"
+LOG_DIR="/config/log"
 LOG_FILE="${LOG_DIR}/build.log"
 FW_DESCRIPTION_FILE="${FW_DIR}/firmware.txt"
 LAST_DIR=$(pwd)
