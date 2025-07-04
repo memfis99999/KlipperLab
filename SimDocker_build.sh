@@ -55,4 +55,4 @@ docker build \
   --build-arg TARGET_UID=${TARGET_UID} \
   --build-arg TARGET_GID=${TARGET_GID} \
   -f "${SCRIPT_DIR}/SimDocker_file" \
-  -t klipper-simulator-env "${PARENT_DIR}"
+  -t klipper-creality-simulator-env "${PARENT_DIR}"

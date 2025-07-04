@@ -81,4 +81,4 @@ else
 fi
 
 docker run "${DOCKER_RUN_OPTS[@]}" \
-  klipper-build-env bash -c "${CMD}"
+  klipper-creality-build-env bash -c "${CMD}"

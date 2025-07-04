@@ -91,7 +91,8 @@ RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Extend environment PATH with toolchains and Python environments
-ENV PATH="/klipper/ci_build/or1k-elf/bin:\
+ENV PATH="/opt/gcc-arm-none-eabi-9-2019q4/bin:\
+          /klipper/ci_build/or1k-elf/bin:\
           /klipper/ci_build/pru-elf/bin:\
           /klipper/ci_build/python-env/bin:\
           /klipper/ci_build/python2-env/bin:${PATH}"

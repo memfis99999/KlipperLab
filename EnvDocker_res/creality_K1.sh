@@ -54,13 +54,23 @@ GIT_DESCRIBE=$(git describe --tags --long --dirty --always)
 VERSION_FULL="${GIT_DESCRIBE}"
 
 # Parse version information
-if [[ $VERSION_FULL =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)-([0-9]+)-g([a-f0-9]+)(-dirty)? ]]; then
+if [[ $VERSION_FULL =~ ^[vV]([0-9]+)\.([0-9]+)\.([0-9]+)-([0-9]+)-g([a-f0-9]+)(-dirty)? ]]; then
+    # Clasic: MAJOR.MINOR.PATCH
     MAJOR="${BASH_REMATCH[1]}"
     MINOR="${BASH_REMATCH[2]}"
     PATCH="${BASH_REMATCH[3]}"
     COMMITS="${BASH_REMATCH[4]}"
     GIT_HASH="${BASH_REMATCH[5]}"
     DIRTY="${BASH_REMATCH[6]}"
+elif [[ $VERSION_FULL =~ ^[vV]([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)-([0-9]+)-g([a-f0-9]+)(-dirty)? ]]; then
+    # Creality: MAJOR.MINOR.PATCH.BUILD
+    MAJOR="${BASH_REMATCH[1]}"
+    MINOR="${BASH_REMATCH[2]}"
+    PATCH="${BASH_REMATCH[3]}"
+    BUILD="${BASH_REMATCH[4]}"
+    COMMITS="${BASH_REMATCH[5]}"
+    GIT_HASH="${BASH_REMATCH[6]}"
+    DIRTY="${BASH_REMATCH[7]}"
 else
     echo "Failed to parse version: $VERSION_FULL"
     exit 1
@@ -88,6 +98,7 @@ for filepath in "${CONFIGS_DIR}"/*_defconfig; do
         echo "[$time] Found config: ${filename}" | tee -a "${LOG_FILE}"
 
         make clean OUT="${OUT_DIR}/"
+        rm -rf "${OUT_DIR:?}"/*
 
         set +e
         make OUT="${OUT_DIR}/" \
@@ -97,19 +108,44 @@ for filepath in "${CONFIGS_DIR}"/*_defconfig; do
 
         if [ $? -ne 0 ]; then
             time=$(date '+%Y-%m-%d %H:%M:%S')
-            echo "[$time] ❌ Build failed for ${filename}. See logs for details." | tee -a "${LOG_FILE}"
-            make OUT="${OUT_DIR}/" \
-                KCONFIG_CONFIG="${CONFIGS_DIR}/${filename}" \
-                CONFIG_MCU_BOARD_FW_VER="${MAJOR}${MINOR}" \
-                CONFIG_MCU_BOARD_FW_RESERVED="${PATCH}" \
-                V=1 2>&1 | tee -a "${LOG_FILE}"
-
-            echo "Build took ${SECONDS} seconds." | tee -a "${LOG_FILE}"
-            echo "----------------------------------------" >> "${LOG_FILE}"
+            {
+                echo "[$time] ❌ Build failed for ${filename}. See logs for details."
+                stdbuf -oL -eL make OUT="${OUT_DIR}/" \
+                    KCONFIG_CONFIG="${CONFIGS_DIR}/${filename}" \
+                    CONFIG_MCU_BOARD_FW_VER="${MAJOR}${MINOR}" \
+                    CONFIG_MCU_BOARD_FW_RESERVED="${PATCH}" \
+                    V=1
+                echo "Build took ${SECONDS} seconds."
+                echo "----------------------------------------"
+                echo "------------fhfdhfdhhfdh------------------"
+            } 2>&1 | tee -a "${LOG_FILE}"
             exit 1
         fi
 
         set -e
+
+        # set +e
+        # make OUT="${OUT_DIR}/" \
+        #     KCONFIG_CONFIG="${CONFIGS_DIR}/${filename}" \
+        #     CONFIG_MCU_BOARD_FW_VER="${MAJOR}${MINOR}" \
+        #     CONFIG_MCU_BOARD_FW_RESERVED="${PATCH}"
+
+        # if [ $? -ne 0 ]; then
+        #     time=$(date '+%Y-%m-%d %H:%M:%S')
+        #     echo "[$time] ❌ Build failed for ${filename}. See logs for details." | tee -a "${LOG_FILE}"
+        #     make OUT="${OUT_DIR}/" \
+        #         KCONFIG_CONFIG="${CONFIGS_DIR}/${filename}" \
+        #         CONFIG_MCU_BOARD_FW_VER="${MAJOR}${MINOR}" \
+        #         CONFIG_MCU_BOARD_FW_RESERVED="${PATCH}" \
+        #         V=1 2>&1 | tee -a "${LOG_FILE}"
+
+        #     echo "Build took ${SECONDS} seconds." | tee -a "${LOG_FILE}"
+        #     echo "----------------------------------------" >> "${LOG_FILE}"
+        #     echo "------------fhfdhfdhhfdh------------------" >> "${LOG_FILE}"
+        #     exit 1
+        # fi
+
+        # set -e
 
         # Find built firmware file (expecting one bin file per config)
         fullpath=$(ls "${OUT_DIR}/${base_name}"*.bin 2>/dev/null | head -n 1)

@@ -55,4 +55,4 @@ docker build \
   --build-arg TARGET_UID=${TARGET_UID} \
   --build-arg TARGET_GID=${TARGET_GID} \
   -f "${SCRIPT_DIR}/EnvDocker_file" \
-  -t klipper-build-env "${PARENT_DIR}"
+  -t klipper-creality-build-env "${PARENT_DIR}"
