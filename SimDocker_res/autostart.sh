@@ -44,6 +44,9 @@
 set -euo pipefail
 set -m
 
+# OUT_DIR="/config/out"
+# LOG_DIR="/config/logs"
+
 echo "🛠️  Autostart initializing..."
 
 # Load shell history if present
@@ -51,7 +54,7 @@ if [ -f /config/SimDocker_bash_hist.txt ]; then
   echo "🔄 Loading shell history..."
   history -c
   cp /config/SimDocker_bash_hist.txt ~/.bash_history
-  history -r
+#  history -r
   echo "✅ History loaded."
 else
   echo "❌ /config/SimDocker_bash_hist.txt not found; skipping history load."
@@ -65,6 +68,27 @@ if [ -f /config/.bash_aliases ]; then
 else
   echo "❌ /config/.bash_aliases not found; skipping alias load."
 fi
+
+# Prepare required directories
+echo "📂 Creating required directories..."
+mkdir -p ~/printer_data/comms ~/printer_data/gcodes "${LOG_DIR}"
+
+# mkdir -p ~/printer_data/logs ~/printer_data/comms ~/printer_data/config \
+    # ~/printer_data/gcodes "${LOG_DIR}"
+
+# rm -rf ~/printer_data/config
+
+# ln -s /config ~/printer_data/config
+# ln -s "${LOG_DIR}" ~/printer_data/logs
+
+# Copy simulation config
+#cp -f /config/simulavr.cfg ~/printer_data/config/printer.cfg
+
+# Link Klipper log
+
+
+
+
 
 # ----- Place for your custom autostart logic -----
 # Add any additional environment setup or automation below

@@ -59,6 +59,7 @@ RUN apt-get install -y \
         libtool \
         libboost-all-dev \
         python3-dev \
+        libusb-dev \
         libffi-dev \
         virtualenv \
         swig \
@@ -93,7 +94,7 @@ RUN echo "/config/autostart.sh" >> /etc/bash.bashrc && \
 WORKDIR $TOOLCHAIN_DIR
 
 # Copy Klipper Python requirements for simulation
-COPY klipper/scripts/klippy-requirements.txt ./scripts/
+COPY KlipperLab/SimDocker_res/klippy-requirements.txt ./scripts/
 
 RUN virtualenv -p python3 /opt/klippy-env && \
     ./bin/pip install -r ./scripts/klippy-requirements.txt

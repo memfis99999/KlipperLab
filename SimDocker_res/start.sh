@@ -36,20 +36,9 @@
 set -euo pipefail
 set -m
 
-echo "🛠️ Container started: initializing simulation environment..."
+echo "🛠️  Container started: initializing simulation environment..."
 OUT_DIR="/config/out"
-LOG_DIR="${OUT_DIR}/log"
-
-# Prepare required directories
-echo "📂 Creating required directories..."
-mkdir -p ~/printer_data/logs ~/printer_data/comms ~/printer_data/config \
-    ~/printer_data/gcodes "${LOG_DIR}"
-
-# Copy simulation config
-cp -f /config/simulavr.cfg ~/printer_data/config/printer.cfg
-
-# Link Klipper log
-ln -sf "${LOG_DIR}/klippy.log" ~/printer_data/logs/klippy.log
+LOG_DIR="/config/logs"
 
 # Build test firmware for AtMega644 (SimulAVR)
 echo "🔧 Building firmware for AtMega644 (simulation)..."
@@ -77,6 +66,8 @@ nohup nice -n 5 "${TOOLCHAIN_DIR}/bin/python" /klipper/scripts/avrsim.py \
 sleep 2
 
 # Start Klipper
-echo "🔄 Starting Klipper..."
-"${TOOLCHAIN_DIR}/bin/python" klippy/klippy.py ~/printer_data/config/printer.cfg \
-    -a /tmp/klippy_uds -v 2>&1 | tee >(tee "${LOG_DIR}/klippy.log" > /tmp/klippy.log)
+#echo "🔄 Starting Klipper..."
+#"${TOOLCHAIN_DIR}/bin/python" klippy/klippy.py ~/printer_data/config/printer.cfg \
+#   -a /tmp/klippy_uds -v 2>&1 | tee >(tee "${LOG_DIR}/klippy.log" > /tmp/klippy.log)
+
+bash
