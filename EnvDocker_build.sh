@@ -38,11 +38,16 @@ echo "🛠️ Building Docker image for the Klipper firmware environment..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARENT_DIR="$(dirname "${SCRIPT_DIR}")"
+PROJECT_NAME="$(basename "${SCRIPT_DIR}")"
+TOOLCHAIN_REL_PATH="${PROJECT_NAME}/tools/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2"
+
 
 if [[ ! -d "${PARENT_DIR}/klipper" ]]; then
   echo "❌ Error: Required directory '${PARENT_DIR}/klipper' not found."
   echo "PARENT_DIR = ${PARENT_DIR}"
   echo "SCRIPT_DIR = ${SCRIPT_DIR}"
+  echo "PROJECT_NAME = ${PROJECT_NAME}"
+  echo "TOOLCHAIN_REL_PATH = ${TOOLCHAIN_REL_PATH}"
   exit 1
 fi
 
@@ -52,6 +57,7 @@ TARGET_GID=$(id -g)
 sudo usermod -aG docker $USER
 
 docker build \
+  --build-arg TOOLCHAIN_PATH=${TOOLCHAIN_REL_PATH} \
   --build-arg TARGET_UID=${TARGET_UID} \
   --build-arg TARGET_GID=${TARGET_GID} \
   -f "${SCRIPT_DIR}/EnvDocker_file" \

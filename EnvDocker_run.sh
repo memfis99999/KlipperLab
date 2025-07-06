@@ -24,7 +24,7 @@
 #     • To drop into a shell inside the container without running
 #       any automatic startup scripts, run:
 #         ./EnvDocker_run.sh bash
-№
+#
 # Requirements:
 #   • Docker installed and running
 #   • 'klipper' directory and 'EnvDocker_res' folder present

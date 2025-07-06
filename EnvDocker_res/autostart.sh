@@ -54,7 +54,7 @@ if [ -f /config/EnvDocker_bash_hist.txt ]; then
   echo "🔄 Loading shell history..."
   history -c
   cp /config/EnvDocker_bash_hist.txt ~/.bash_history
-  history -r
+  #history -r
   echo "✅ History loaded."
 else
   echo "❌ /config/EnvDocker_bash_hist.txt not found; skipping history load."

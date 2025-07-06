@@ -1,5 +1,13 @@
-Add branch to work on  https://github.com/CrealityOfficial/K1_Series_Klipper
-. Add script to compile all firmware to Kreality K1
+теперь эта ветка только для моего https://github.com/memfis99999/K1_Creality
+что является форком от
+https://github.com/CrealityOfficial/K1_Series_Klipper
+
+* удалить ненужные файлы и папки
+. доработать klipper/scripts/ci-install.sh
+. перейти на дефконфиги от креалити в их структуре каталогов
+. перенести папку скомпилированных прошивок
+. доработать скрипт автокомпилирования
+
 
 . Update EnvDocker_README.md
 . Update README.md
