@@ -85,15 +85,6 @@ else
   CMD=$(printf "%q " "$@")
 fi
 
-# Подготовка переменной CMD
-if [ $# -eq 0 ]; then
-  echo "🟢 Running default startup script: /config/start.sh"
-  CMD="/config/start.sh"
-else
-  echo "🟢 Running custom command: $*"
-  CMD=$(printf "%q " "$@")
-fi
-
 # Команды, которые должны выполняться всегда — перед CMD
 ENV_INIT='
 mkdir -p /config/gcodes /config/logs;

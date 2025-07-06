@@ -45,7 +45,7 @@ set -euo pipefail
 set -m
 
 # OUT_DIR="/config/out"
-# LOG_DIR="/config/logs"
+LOG_DIR="/config/logs"
 
 echo "🛠️  Autostart initializing..."
 
@@ -72,23 +72,6 @@ fi
 # Prepare required directories
 echo "📂 Creating required directories..."
 mkdir -p ~/printer_data/comms ~/printer_data/gcodes "${LOG_DIR}"
-
-# mkdir -p ~/printer_data/logs ~/printer_data/comms ~/printer_data/config \
-    # ~/printer_data/gcodes "${LOG_DIR}"
-
-# rm -rf ~/printer_data/config
-
-# ln -s /config ~/printer_data/config
-# ln -s "${LOG_DIR}" ~/printer_data/logs
-
-# Copy simulation config
-#cp -f /config/simulavr.cfg ~/printer_data/config/printer.cfg
-
-# Link Klipper log
-
-
-
-
 
 # ----- Place for your custom autostart logic -----
 # Add any additional environment setup or automation below

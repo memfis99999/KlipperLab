@@ -44,8 +44,22 @@ LOG_DIR="/config/logs"
 echo "🔧 Building firmware for AtMega644 (simulation)..."
 LAST_DIR=$(pwd)
 cd /klipper
-make OUT="${OUT_DIR}/" KCONFIG_CONFIG=/config/.config_simulavr
+make OUT="${OUT_DIR}/avr/" KCONFIG_CONFIG=/config/sim_avr.config
 cd "${LAST_DIR}"
+
+# # Build test firmware for Linux Process
+# echo "🔧 Building firmware for for Linux Process..."
+# LAST_DIR=$(pwd)
+# cd /klipper
+# make OUT="${OUT_DIR}/linux_process/" KCONFIG_CONFIG=/config/sim_linux.config
+# cd "${LAST_DIR}"
+
+# # Build test firmware for Host simulator
+# echo "🔧 Building firmware for for Host simulator..."
+# LAST_DIR=$(pwd)
+# cd /klipper
+# make OUT="${OUT_DIR}/host_simulator/" KCONFIG_CONFIG=/config/sim_host.config
+# cd "${LAST_DIR}"
 
 # Start nginx
 echo "🌐 Starting nginx web server..."
@@ -60,7 +74,7 @@ nohup "${TOOLCHAIN_DIR}/bin/python" /moonraker/moonraker/moonraker.py \
 # Start SimulAVR
 echo "🖥️  Starting SimulAVR simulation... Logging to ${LOG_DIR}/simulavr.log"
 nohup nice -n 5 "${TOOLCHAIN_DIR}/bin/python" /klipper/scripts/avrsim.py \
-    "${OUT_DIR}/klipper.elf" > "${LOG_DIR}/simulavr.log" 2>&1 &
+    "${OUT_DIR}/avr/klipper.elf" > "${LOG_DIR}/simulavr.log" 2>&1 &
 
 # Waiting for firmware compilation to complete
 sleep 2
