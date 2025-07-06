@@ -66,6 +66,7 @@ RUN apt-get install -y \
         gcc-avr \
         avr-libc \
         binutils-avr \
+        gdb \
         srecord \
         automake \
         autoconf \
