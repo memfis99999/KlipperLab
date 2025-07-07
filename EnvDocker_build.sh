@@ -19,12 +19,12 @@
 #   /your-workspace/
 #   ├── klipper/
 #   └── KlipperLab/
-#       └── EnvDocker_build.sh
+#       └── EnvDocker_build.sh*
 #
 # Notes:
 #   • Automatically adds current user to 'docker' group
 #   • Requires Docker to be installed and running
-#   • Image name: klipper-build-env
+#   • Image name: klipper-creality-build-env
 #
 # License:
 #   This project is licensed under the GNU General Public License v3.0.

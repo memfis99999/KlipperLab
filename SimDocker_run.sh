@@ -35,7 +35,7 @@
 #   /your-workspace/
 #   ├── klipper/
 #   └── KlipperLab/
-#       └── SimDocker_run.sh
+#       └── SimDocker_run.sh*
 #
 # Notes:
 #   • Container runs with your host UID:GID for correct file ownership.

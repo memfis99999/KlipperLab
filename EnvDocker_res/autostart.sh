@@ -9,7 +9,6 @@
 #   Runs automatically on container startup to:
 #     • Load predefined shell history
 #     • Load custom aliases
-#     • Copy the ci_build directory into /klipper on first run
 #     • Any additional user customizations (extend as needed)
 #
 #   Part of the KlipperLab project.
@@ -49,18 +48,18 @@ set -m
 
 echo "🛠️  Autostart initializing..."
 
-# Load shell history
+# Load shell history if present
 if [ -f /config/EnvDocker_bash_hist.txt ]; then
   echo "🔄 Loading shell history..."
   history -c
   cp /config/EnvDocker_bash_hist.txt ~/.bash_history
-  #history -r
+#  history -r
   echo "✅ History loaded."
 else
   echo "❌ /config/EnvDocker_bash_hist.txt not found; skipping history load."
 fi
 
-# Load aliases
+# Load aliases if present
 if [ -f /config/.bash_aliases ]; then
   echo "🔄 Loading aliases..."
   cp /config/.bash_aliases ~/.bash_aliases
@@ -69,16 +68,17 @@ else
   echo "❌ /config/.bash_aliases not found; skipping alias load."
 fi
 
-# Copy ci_build into /klipper on first startup
-if [ ! -d /klipper/ci_build ]; then
-  echo "ℹ️  Copying ci_build into /klipper..."
-  cp -r "${TOOLCHAIN_DIR}/ci_build" /klipper/
-else
-  echo "ℹ️  ci_build already present; skipping copy."
-fi
+# # Copy ci_build into /klipper on first startup
+# if [ ! -d /klipper/ci_build ]; then
+#   echo "ℹ️  Copying ci_build into /klipper..."
+#   cp -r "${TOOLCHAIN_DIR}/ci_build" /klipper/
+# else
+#   echo "ℹ️  ci_build already present; skipping copy."
+# fi
 
 # ----- Place for your custom autostart logic -----
 # Add any additional environment setup or automation below
 
 # Example:
 # echo "Custom autostart actions go here..."
+

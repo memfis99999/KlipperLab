@@ -78,3 +78,4 @@ mkdir -p ~/printer_data/comms ~/printer_data/gcodes "${LOG_DIR}"
 
 # Example:
 # echo "Custom autostart actions go here..."
+

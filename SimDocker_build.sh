@@ -24,7 +24,7 @@
 # Notes:
 #   • Automatically adds current user to 'docker' group
 #   • Requires Docker to be installed and running
-#   • Image name: klipper-simulator-env
+#   • Image name: klipper-creality-simulator-env
 #
 # License:
 #   This project is licensed under the GNU General Public License v3.0.
