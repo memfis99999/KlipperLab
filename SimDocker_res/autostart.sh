@@ -44,6 +44,9 @@
 set -euo pipefail
 set -m
 
+# OUT_DIR="/config/out"
+LOG_DIR="/config/logs"
+
 echo "🛠️  Autostart initializing..."
 
 # Load shell history if present
@@ -51,7 +54,7 @@ if [ -f /config/SimDocker_bash_hist.txt ]; then
   echo "🔄 Loading shell history..."
   history -c
   cp /config/SimDocker_bash_hist.txt ~/.bash_history
-  history -r
+#  history -r
   echo "✅ History loaded."
 else
   echo "❌ /config/SimDocker_bash_hist.txt not found; skipping history load."
@@ -66,8 +69,13 @@ else
   echo "❌ /config/.bash_aliases not found; skipping alias load."
 fi
 
+# Prepare required directories
+echo "📂 Creating required directories..."
+mkdir -p ~/printer_data/comms ~/printer_data/gcodes "${LOG_DIR}"
+
 # ----- Place for your custom autostart logic -----
 # Add any additional environment setup or automation below
 
 # Example:
 # echo "Custom autostart actions go here..."
+

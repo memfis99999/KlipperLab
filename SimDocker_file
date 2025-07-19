@@ -59,12 +59,14 @@ RUN apt-get install -y \
         libtool \
         libboost-all-dev \
         python3-dev \
+        libusb-dev \
         libffi-dev \
         virtualenv \
         swig \
         gcc-avr \
         avr-libc \
         binutils-avr \
+        gdb \
         srecord \
         automake \
         autoconf \
@@ -131,3 +133,4 @@ RUN git config --global --add safe.directory /moonraker
 WORKDIR /klipper
 
 CMD ["/bin/bash"]
+

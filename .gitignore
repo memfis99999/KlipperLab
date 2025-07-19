@@ -6,3 +6,4 @@ out
 *.so
 *.pyc
 *.log
+*.old

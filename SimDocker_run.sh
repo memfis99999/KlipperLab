@@ -35,7 +35,7 @@
 #   /your-workspace/
 #   ├── klipper/
 #   └── KlipperLab/
-#       └── SimDocker_run.sh
+#       └── SimDocker_run.sh*
 #
 # Notes:
 #   • Container runs with your host UID:GID for correct file ownership.
@@ -55,6 +55,9 @@ set -m
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 KLIPPER_HOST_PATH="$(cd "${SCRIPT_DIR}/../klipper" && pwd)"
 CONFIG_PATH="${SCRIPT_DIR}/SimDocker_res"
+
+OUT_DIR="/config/out"
+LOG_DIR="/config/logs"
 
 echo "🔗 Mounting host directory: ${KLIPPER_HOST_PATH} → /klipper"
 echo "🔗 Mounting config directory: ${CONFIG_PATH} → /config"
@@ -82,5 +85,16 @@ else
   CMD=$(printf "%q " "$@")
 fi
 
+# Команды, которые должны выполняться всегда — перед CMD
+ENV_INIT='
+mkdir -p /config/gcodes /config/logs;
+mkdir -p ~/printer_data;
+ln -snf /config ~/printer_data/config;
+ln -snf /config/logs ~/printer_data/logs;
+ln -snf /config/gcodes ~/printer_data/gcodes;
+'
+
+# Финальный запуск: сначала создаём симлинки, потом — основную команду
 docker run "${DOCKER_RUN_OPTS[@]}" \
-  klipper-simulator-env bash -c "${CMD}"
+  klipper-simulator-env \
+  bash -c "${ENV_INIT}${CMD}"

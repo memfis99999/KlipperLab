@@ -19,7 +19,7 @@
 #   /your-workspace/
 #   ├── klipper/
 #   └── KlipperLab/
-#       └── EnvDocker_build.sh
+#       └── EnvDocker_build.sh*
 #
 # Notes:
 #   • Automatically adds current user to 'docker' group

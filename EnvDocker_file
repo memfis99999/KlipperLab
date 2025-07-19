@@ -83,7 +83,7 @@ COPY klipper/scripts/ci-install.sh /tmp/ci-install.sh
 
 # Patch the original install script (remove sudo, ensure -y)
 RUN sed -E 's/sudo //g; s/apt-get install +/apt-get install -y /g' \
-    /tmp/ci-install.sh > $TOOLCHAIN_DIR/scripts/ci-install.sh && \
+    /tmp/ci-install.sh > ${TOOLCHAIN_DIR}/scripts/ci-install.sh && \
     bash ./scripts/ci-install.sh
 
 # Cleanup to reduce image size
@@ -91,10 +91,10 @@ RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Extend environment PATH with toolchains and Python environments
-ENV PATH="/klipper/ci_build/or1k-elf/bin:\
-          /klipper/ci_build/pru-elf/bin:\
-          /klipper/ci_build/python-env/bin:\
-          /klipper/ci_build/python2-env/bin:${PATH}"
+ENV PATH="${TOOLCHAIN_DIR}/ci_build/or1k-elf/bin:\
+          ${TOOLCHAIN_DIR}/ci_build/pru-elf/bin:\
+          ${TOOLCHAIN_DIR}/ci_build/python-env/bin:\
+          ${TOOLCHAIN_DIR}/ci_build/python2-env/bin:${PATH}"
 
 # Switch to the non-root build user
 USER ${USERNAME}

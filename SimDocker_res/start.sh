@@ -36,27 +36,30 @@
 set -euo pipefail
 set -m
 
-echo "🛠️ Container started: initializing simulation environment..."
+echo "🛠️  Container started: initializing simulation environment..."
 OUT_DIR="/config/out"
-LOG_DIR="${OUT_DIR}/log"
-
-# Prepare required directories
-echo "📂 Creating required directories..."
-mkdir -p ~/printer_data/logs ~/printer_data/comms ~/printer_data/config \
-    ~/printer_data/gcodes "${LOG_DIR}"
-
-# Copy simulation config
-cp -f /config/simulavr.cfg ~/printer_data/config/printer.cfg
-
-# Link Klipper log
-ln -sf "${LOG_DIR}/klippy.log" ~/printer_data/logs/klippy.log
+LOG_DIR="/config/logs"
 
 # Build test firmware for AtMega644 (SimulAVR)
 echo "🔧 Building firmware for AtMega644 (simulation)..."
 LAST_DIR=$(pwd)
 cd /klipper
-make OUT="${OUT_DIR}/" KCONFIG_CONFIG=/config/.config_simulavr
+make OUT="${OUT_DIR}/avr/" KCONFIG_CONFIG=/config/sim_avr.config
 cd "${LAST_DIR}"
+
+# # Build test firmware for Linux Process
+# echo "🔧 Building firmware for for Linux Process..."
+# LAST_DIR=$(pwd)
+# cd /klipper
+# make OUT="${OUT_DIR}/linux_process/" KCONFIG_CONFIG=/config/sim_linux.config
+# cd "${LAST_DIR}"
+
+# # Build test firmware for Host simulator
+# echo "🔧 Building firmware for for Host simulator..."
+# LAST_DIR=$(pwd)
+# cd /klipper
+# make OUT="${OUT_DIR}/host_simulator/" KCONFIG_CONFIG=/config/sim_host.config
+# cd "${LAST_DIR}"
 
 # Start nginx
 echo "🌐 Starting nginx web server..."
@@ -71,12 +74,15 @@ nohup "${TOOLCHAIN_DIR}/bin/python" /moonraker/moonraker/moonraker.py \
 # Start SimulAVR
 echo "🖥️  Starting SimulAVR simulation... Logging to ${LOG_DIR}/simulavr.log"
 nohup nice -n 5 "${TOOLCHAIN_DIR}/bin/python" /klipper/scripts/avrsim.py \
-    "${OUT_DIR}/klipper.elf" > "${LOG_DIR}/simulavr.log" 2>&1 &
+    "${OUT_DIR}/avr/klipper.elf" > "${LOG_DIR}/simulavr.log" 2>&1 &
 
 # Waiting for firmware compilation to complete
 sleep 2
 
 # Start Klipper
-echo "🔄 Starting Klipper..."
-"${TOOLCHAIN_DIR}/bin/python" klippy/klippy.py ~/printer_data/config/printer.cfg \
-    -a /tmp/klippy_uds -v 2>&1 | tee >(tee "${LOG_DIR}/klippy.log" > /tmp/klippy.log)
+#echo "🔄 Starting Klipper..."
+#"${TOOLCHAIN_DIR}/bin/python" klippy/klippy.py ~/printer_data/config/printer.cfg \
+#   -a /tmp/klippy_uds -v 2>&1 | tee >(tee "${LOG_DIR}/klippy.log" > /tmp/klippy.log)
+
+bash
+
