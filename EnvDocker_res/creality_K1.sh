@@ -38,6 +38,7 @@ SECONDS=0
 CONFIGS_DIR="/klipper/src/configs"
 OUT_DIR="/klipper/out"
 FW_DIR="/klipper/fw/K1"
+TMP_FW_DIR="/klipper/tmp_fw"
 LOG_DIR="/klipper/log"
 LOG_FILE="${LOG_DIR}/build.log"
 FW_DESCRIPTION_FILE="${FW_DIR}/firmware.txt"
@@ -46,7 +47,7 @@ LAST_DIR=$(pwd)
 # Prepare directories
 echo "📂 Creating required directories..."
 mkdir -p "${OUT_DIR}" "${FW_DIR}/dict" "${LOG_DIR}"
-
+mkdir -p "${TMP_FW_DIR}/dict"
 cd /klipper
 
 # Get full version from Git
@@ -132,8 +133,8 @@ for filepath in "${CONFIGS_DIR}"/*_defconfig; do
         fullpath=$(ls "${OUT_DIR}/${base_name}"*.bin 2>/dev/null | head -n 1)
         filename_no_ext=$(basename "${fullpath}" .bin)
 
-        cp "${OUT_DIR}"/${base_name}*.bin "${FW_DIR}/"
-        cp "${OUT_DIR}/klipper.dict" "${FW_DIR}/dict/${filename_no_ext}.dict"
+        cp "${OUT_DIR}"/${base_name}*.bin "${TMP_FW_DIR}/"
+        cp "${OUT_DIR}/klipper.dict" "${TMP_FW_DIR}/dict/${filename_no_ext}.dict"
     fi
 done
 
@@ -153,6 +154,13 @@ GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'N/A')
   echo "🛠️ Artifacts saved to: ${FW_DIR}"
   echo "🔗 URL: git clone --depth 1 --branch ${GIT_BRANCH} ${GITHUB_URL}.git klipper && cd klipper && git checkout ${GIT_HASH}"
 } > "${FW_DESCRIPTION_FILE}"
+
+echo "✅ All builds completed. Copying artifacts..."
+
+cp "${TMP_FW_DIR}/"*.bin "${FW_DIR}/"
+cp "${TMP_FW_DIR}/dict/"* "${FW_DIR}/dict/"
+
+rm -rf "${TMP_FW_DIR}"
 
 time=$(date '+%Y-%m-%d %H:%M:%S')
 echo "[$time] 🛠️ Build completed successfully." | tee -a "${LOG_FILE}"
