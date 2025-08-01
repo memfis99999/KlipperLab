@@ -41,7 +41,7 @@ FW_DIR="/klipper/fw/K1"
 TMP_FW_DIR="/klipper/tmp_fw"
 LOG_DIR="/klipper/log"
 LOG_FILE="${LOG_DIR}/build.log"
-FW_DESCRIPTION_FILE="${FW_DIR}/firmware.txt"
+FW_DESCRIPTION_FILE="${TMP_FW_DIR}/firmware.txt"
 LAST_DIR=$(pwd)
 
 # Prepare directories
@@ -163,7 +163,7 @@ echo "✅ All builds completed. Copying artifacts..."
 rm -rf "${FW_DIR}"
 mkdir -p "${FW_DIR}/dict"
 
-cp "${TMP_FW_DIR}/"*.bin "${FW_DIR}/"
+cp "${TMP_FW_DIR}/"* "${FW_DIR}/"
 cp "${TMP_FW_DIR}/dict/"* "${FW_DIR}/dict/"
 
 rm -rf "${TMP_FW_DIR}"
