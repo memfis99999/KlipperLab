@@ -46,6 +46,9 @@ LAST_DIR=$(pwd)
 
 # Prepare directories
 echo "📂 Creating required directories..."
+
+rm -rf "${TMP_FW_DIR}"
+
 mkdir -p "${OUT_DIR}" "${FW_DIR}/dict" "${LOG_DIR}"
 mkdir -p "${TMP_FW_DIR}/dict"
 cd /klipper
@@ -157,6 +160,9 @@ GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'N/A')
 
 echo "✅ All builds completed. Copying artifacts..."
 
+rm -rf "${FW_DIR}"
+mkdir -p "${FW_DIR}/dict"
+
 cp "${TMP_FW_DIR}/"*.bin "${FW_DIR}/"
 cp "${TMP_FW_DIR}/dict/"* "${FW_DIR}/dict/"
 
@@ -166,4 +172,3 @@ time=$(date '+%Y-%m-%d %H:%M:%S')
 echo "[$time] 🛠️ Build completed successfully." | tee -a "${LOG_FILE}"
 echo "Build took ${SECONDS} seconds." | tee -a "${LOG_FILE}"
 echo "----------------------------------------" >> "${LOG_FILE}"
-
