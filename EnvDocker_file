@@ -79,6 +79,7 @@ WORKDIR $TOOLCHAIN_DIR
 
 # Copy Klipper scripts into the image
 COPY klipper/scripts/klippy-requirements.txt ./scripts/
+COPY klipper/scripts/tests-requirements.txt ./scripts/
 COPY klipper/scripts/ci-install.sh /tmp/ci-install.sh
 
 # Patch the original install script (remove sudo, ensure -y)

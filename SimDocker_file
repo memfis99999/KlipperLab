@@ -96,6 +96,7 @@ WORKDIR $TOOLCHAIN_DIR
 
 # Copy Klipper Python requirements for simulation
 COPY klipper/scripts/klippy-requirements.txt ./scripts/
+COPY klipper/scripts/tests-requirements.txt ./scripts/
 
 RUN virtualenv -p python3 /opt/klippy-env && \
     ./bin/pip install -r ./scripts/klippy-requirements.txt
