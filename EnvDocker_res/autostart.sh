@@ -68,13 +68,31 @@ else
   echo "❌ /config/.bash_aliases not found; skipping alias load."
 fi
 
-# # Copy ci_build into /klipper on first startup
-# if [ ! -d /klipper/ci_build ]; then
-#   echo "ℹ️  Copying ci_build into /klipper..."
-#   cp -r "${TOOLCHAIN_DIR}/ci_build" /klipper/
-# else
-#   echo "ℹ️  ci_build already present; skipping copy."
+# # Ensure Klipper CI build directory is available at /klipper/ci_build
+# # Klipper CI scripts assume BUILD_DIR="${PWD}/ci_build" when run from repo root.
+# if [ -d "${TOOLCHAIN_DIR}/ci_build" ] && [ -d /klipper ]; then
+#   if [ -e /klipper/ci_build ] && [ ! -L /klipper/ci_build ]; then
+#     echo "⚠️  Removing existing /klipper/ci_build (not a symlink)..."
+#     rm -rf /klipper/ci_build
+#   fi
+#
+#   if [ ! -e /klipper/ci_build ]; then
+#     echo "🔗 Linking /klipper/ci_build → ${TOOLCHAIN_DIR}/ci_build"
+#     ln -s "${TOOLCHAIN_DIR}/ci_build" /klipper/ci_build
+#   else
+#     echo "ℹ️  /klipper/ci_build already linked."
+#   fi
 # fi
+
+
+
+# Copy ci_build into /klipper on first startup
+if [ ! -d /klipper/ci_build ]; then
+ echo "ℹ️  Copying ci_build into /klipper..."
+ cp -r "${TOOLCHAIN_DIR}/ci_build" /klipper/
+else
+ echo "ℹ️  ci_build already present; skipping copy."
+fi
 
 # ----- Place for your custom autostart logic -----
 # Add any additional environment setup or automation below

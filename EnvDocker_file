@@ -91,11 +91,11 @@ RUN sed -E 's/sudo //g; s/apt-get install +/apt-get install -y /g' \
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Extend environment PATH with toolchains and Python environments
-ENV PATH="${TOOLCHAIN_DIR}/ci_build/or1k-elf/bin:\
-          ${TOOLCHAIN_DIR}/ci_build/pru-elf/bin:\
-          ${TOOLCHAIN_DIR}/ci_build/python-env/bin:\
-          ${TOOLCHAIN_DIR}/ci_build/python2-env/bin:${PATH}"
+# # Extend environment PATH with toolchains and Python environments
+# ENV PATH="${TOOLCHAIN_DIR}/ci_build/or1k-elf/bin:\
+#           ${TOOLCHAIN_DIR}/ci_build/pru-elf/bin:\
+#           ${TOOLCHAIN_DIR}/ci_build/python-env/bin:\
+#           ${TOOLCHAIN_DIR}/ci_build/python2-env/bin:${PATH}"
 
 # Switch to the non-root build user
 USER ${USERNAME}
