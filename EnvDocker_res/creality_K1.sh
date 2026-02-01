@@ -157,4 +157,3 @@ time=$(date '+%Y-%m-%d %H:%M:%S')
 echo "[$time] 🛠️ Build completed successfully." | tee -a "${LOG_FILE}"
 echo "Build took ${SECONDS} seconds." | tee -a "${LOG_FILE}"
 echo "----------------------------------------" >> "${LOG_FILE}"
-
