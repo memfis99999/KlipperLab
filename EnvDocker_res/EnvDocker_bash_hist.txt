@@ -1,11 +1,9 @@
 cd /klipper
 clear
-make gd23_defconfig
-make gd32_defconfig
-make stm32_defconfig
-make sim_defconfig
 make V=1 2>&1 | tee build.log
 make menuconfig
 make clean
 make
 scripts/check_whitespace.sh 2>&1 | tee check_whitespace.log
+./scripts/ci-build_creality.sh
+./scripts/ci-build.sh

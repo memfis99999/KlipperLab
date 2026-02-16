@@ -1,5 +1,4 @@
 Add branch to work on  https://github.com/CrealityOfficial/K1_Series_Klipper
-. Add script to compile all firmware to Kreality K1
 
 . Update EnvDocker_README.md
 . Update README.md

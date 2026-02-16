@@ -34,4 +34,5 @@ set -euo pipefail
 set -m
 
 echo "🚀 Starting firmware build for Creality K1..."
-/config/creality_K1.sh
+cd /klipper
+./scripts/ci-build_creality.sh
