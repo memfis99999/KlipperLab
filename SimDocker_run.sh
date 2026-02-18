@@ -78,7 +78,8 @@ DOCKER_RUN_OPTS=(
 
 if [ $# -eq 0 ]; then
   echo "🟢 Running default startup script: /config/start.sh"
-  CMD="/config/start.sh"
+  CMD="/config/linux-sim.sh & bash"
+  # start.sh"
 else
   echo "🟢 Running custom command: $*"
   # Quote each argument to preserve spaces/special chars
