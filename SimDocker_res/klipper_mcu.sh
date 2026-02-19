@@ -22,35 +22,40 @@ KLIPPER_LOG=${LOG_DIR}/klippy.log
 SRCDIR="/klipper"
 PRINTER_CFG="/config/linux-sim.cfg"
 
-PIDFILE=/var/run/klipper.pid
+PIDFILE=/var/run/klipper_mcu.pid
 
 . /lib/lsb/init-functions
 
 KLIPPY_EXEC="/usr/local/bin/klipper_mcu"
 KLIPPY_USER=root
-KLIPPY_ARGS="-r -I ${KLIPPER_HOST_MCU_SERIAL}"
-
+# KLIPPY_USER=klippy
 
 KLIPPER_HOST_MCU_SERIAL="/tmp/klipper_host_mcu"
+KLIPPY_ARGS="-r -I ${KLIPPER_HOST_MCU_SERIAL}"
+# KLIPPY_ARGS="-I ${KLIPPER_HOST_MCU_SERIAL}"
+
+
 
 
 
 case "$1" in
-start)  log_daemon_msg "Starting klipper" $NAME
+start)  log_daemon_msg "Starting " $NAME
+        echo "Running: $KLIPPY_EXEC $KLIPPY_ARGS"
         start-stop-daemon --start --quiet --exec $KLIPPY_EXEC \
                           --background --pidfile $PIDFILE --make-pidfile \
                           --chuid $KLIPPY_USER --user $KLIPPY_USER \
                           -- $KLIPPY_ARGS
         log_end_msg $?
+        echo $?
         ;;
-stop)   log_daemon_msg "Stopping klipper" $NAME
+stop)   log_daemon_msg "Stopping " $NAME
         killproc -p $PIDFILE $KLIPPY_EXEC
         RETVAL=$?
         [ $RETVAL -eq 0 ] && [ -e "$PIDFILE" ] && rm -f $PIDFILE
         log_end_msg $RETVAL
         sh -c 'echo "FORCE_SHUTDOWN" > ${KLIPPER_HOST_MCU_SERIAL}'
         ;;
-restart) log_daemon_msg "Restarting klipper" $NAME
+restart) log_daemon_msg "Restarting " $NAME
         $0 stop
         $0 start
         ;;

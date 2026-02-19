@@ -37,21 +37,24 @@ set -euo pipefail
 set -m
 
 echo "🛠️  Container started: initializing simulation environment..."
-OUT_DIR="/config/out"
-LOG_DIR="/config/logs"
 
-# PYTHONDIR="${HOME}/klippy-env"
-# Find SRCDIR from the pathname of this script
-# SRCDIR="/klipper"
-# PRINTER_CFG="/config/linux-sim.cfg"
-
-INITDDIR="/etc/init.d"
-#"/etc/systemd/system"
-# KLIPPER_LOG=${LOG_DIR}/klippy.log
-
-# KLIPPER_USER=$(id -nu)
-# KLIPPER_GROUP=$KLIPPER_USER
-
+source /config/linux-sim.env
+#
+#OUT_DIR="/config/out"
+#LOG_DIR="/config/logs"
+#
+## PYTHONDIR="${HOME}/klippy-env"
+## Find SRCDIR from the pathname of this script
+## SRCDIR="/klipper"
+## PRINTER_CFG="/config/linux-sim.cfg"
+#
+#INITDDIR="/etc/init.d"
+##"/etc/systemd/system"
+## KLIPPER_LOG=${LOG_DIR}/klippy.log
+#
+## KLIPPER_USER=$(id -nu)
+## KLIPPER_GROUP=$KLIPPER_USER
+#
 # Helper functions
 report_status()
 {
@@ -66,17 +69,56 @@ verify_ready()
     fi
 }
 
+install_systemctl_mock()
+{
+    report_status "Installing systemctl_mock script..."
+
+    ULB_MOCK=/usr/local/bin/systemctl_mock
+    UB_CTL=/usr/bin/systemctl
+    ULB_CTL=/usr/local/bin/systemctl
+    UB_JCTL=/usr/bin/journalctl
+    ULB_JCTL=/usr/local/bin/journalctl
+    SBIN_CTL=/sbin/systemctl
+    SBIN_JCTL=/sbin/journalctl
+
+    sudo cp /config/systemctl.sh ${ULB_MOCK}
+    sudo chmod 777 ${ULB_MOCK}
+
+    sudo rm -f ${UB_CTL} ${ULB_CTL} ${UB_JCTL} ${ULB_JCTL}
+
+    sudo ln -s ${ULB_MOCK} ${UB_CTL}
+    sudo ln -s ${ULB_MOCK} ${ULB_CTL}
+    sudo ln -s ${ULB_MOCK} ${UB_JCTL}
+    sudo ln -s ${ULB_MOCK} ${ULB_JCTL}
+    sudo ln -s ${ULB_MOCK} ${SBIN_CTL}
+    sudo ln -s ${ULB_MOCK} ${SBIN_JCTL}
+
+    if [ ! -f ${SYSTEMCTL_LOG} ]; then
+        touch ${SYSTEMCTL_LOG}
+    fi
+
+    sudo chmod 666 ${SYSTEMCTL_LOG}
+}
+
+
 # Step 3: Install startup script
 install_script()
 {
-# Create systemd service file klipper.service
+#
 
+
+
+
+# Create systemd service file klipper.service
     report_status "Installing system klipper-mcu service start script..."
     sudo cp /config/klipper_mcu.sh $INITDDIR/klipper_mcu
 
 # Create systemd service file klipper.service
     report_status "Installing system klipper service start script..."
     sudo cp /config/klipper-start.sh $INITDDIR/klipper
+
+    rm -f "/tmp/klippy.log"
+    ln -s "${LOG_DIR}/klippy.log" "/tmp/klippy.log"
 }
 
 # Step 4: Start host software
@@ -120,7 +162,7 @@ start_nginx()
     # Start nginx
     echo "🌐 Starting nginx web server..."
     sudo nginx -c /config/nginx.conf -t &
-    pkill nginx || true $
+    sudo pkill nginx || true $
     sudo nginx -c /config/nginx.conf &
 }
 
@@ -134,10 +176,12 @@ sleep 2
 
 # Run installation steps defined above
 verify_ready
+install_systemctl_mock
 install_script
 build_firmware
-start_moonraker
 start_software
+start_moonraker
+# start_software
 start_nginx
 
 # bash

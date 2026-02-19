@@ -96,6 +96,10 @@ ln -snf /config/gcodes ~/printer_data/gcodes;
 '
 
 # Финальный запуск: сначала создаём симлинки, потом — основную команду
-docker run "${DOCKER_RUN_OPTS[@]}" \
+docker run --privileged \
+  --cap-add=SYS_NICE \
+  --cap-add=SYS_RESOURCE \
+  --cap-add=IPC_LOCK \
+  "${DOCKER_RUN_OPTS[@]}" \
   klipper-simulator-env \
   bash -c "${ENV_INIT}${CMD}"

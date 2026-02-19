@@ -15,8 +15,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 DESC="klipper daemon"
 NAME="klipper"
 # OUT_DIR="/config/out"
-# LOG_DIR="/config/logs"
-KLIPPER_LOG=/tmp/klippy.log
+LOG_DIR="/config/logs"
+KLIPPER_LOG=${LOG_DIR}/klippy.log
+# KLIPPER_LOG=/tmp/klippy.log
 # PYTHONDIR="${HOME}/klippy-env"
 # Find SRCDIR from the pathname of this script
 TOOLCHAIN_DIR="/opt/klippy-env"
@@ -29,7 +30,7 @@ PIDFILE=/var/run/klipper.pid
 
 KLIPPY_EXEC=${TOOLCHAIN_DIR}/bin/python
 KLIPPY_USER=root
-KLIPPY_ARGS="${SRCDIR}/klippy/klippy.py ${PRINTER_CFG} -l ${KLIPPER_LOG}"
+KLIPPY_ARGS="${SRCDIR}/klippy/klippy.py ${PRINTER_CFG} -l ${KLIPPER_LOG} -a /tmp/klippy_uds"
 
 case "$1" in
 start)  log_daemon_msg "Starting klipper" $NAME
@@ -38,6 +39,7 @@ start)  log_daemon_msg "Starting klipper" $NAME
                           --chuid $KLIPPY_USER --user $KLIPPY_USER \
                           -- $KLIPPY_ARGS
         log_end_msg $?
+        chmod 666 /tmp/klippy_uds
         ;;
 stop)   log_daemon_msg "Stopping klipper" $NAME
         killproc -p $PIDFILE $KLIPPY_EXEC

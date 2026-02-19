@@ -81,6 +81,7 @@ RUN apt-get install -y \
 # Create user with specified UID and GID
 RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
     useradd -m -u ${TARGET_UID} -g ${TARGET_GID} -s /bin/bash ${USERNAME} && \
+    usermod -aG tty ${USERNAME} && \
     echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME} && \
     chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
@@ -106,11 +107,11 @@ RUN git clone ${GH_MOONRAKER} /moonraker && \
     ./bin/pip install \
         -r /moonraker/scripts/moonraker-requirements.txt
 
-# Clone and build SimulAVR
-RUN git clone ${GH_SIMAVR} && \
-    cd simulavr && \
-    make python && \
-    make build
+# # Clone and build SimulAVR
+# RUN git clone ${GH_SIMAVR} && \
+#     cd simulavr && \
+#     make python && \
+#     make build
 
 # Download and unpack Fluidd
 RUN mkdir -p /var/www/fluidd && \
@@ -119,8 +120,8 @@ RUN mkdir -p /var/www/fluidd && \
     unzip fluidd.zip && \
     rm fluidd.zip
 
-ENV PATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr:${PATH}"
-ENV PYTHONPATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr/"
+# ENV PATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr:${PATH}"
+# ENV PYTHONPATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr/"
 
 # Cleanup
 RUN apt-get clean && \
@@ -134,4 +135,3 @@ RUN git config --global --add safe.directory /moonraker
 WORKDIR /klipper
 
 CMD ["/bin/bash"]
-
