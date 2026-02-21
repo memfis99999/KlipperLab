@@ -3,7 +3,7 @@
 # │ KlipperLab — Klipper Firmware Build and Test Environment   │
 # │ Author: Yurii (https://github.com/memfis99999)             │
 # │ License: GNU GPLv3                                         │
-# │ Project started: 2025                                      │
+# │ Project started: 2025 - 2026                               │
 # └────────────────────────────────────────────────────────────┘
 # Description:
 #   Launches the Docker container for the Klipper simulator
@@ -77,8 +77,8 @@ DOCKER_RUN_OPTS=(
 )
 
 if [ $# -eq 0 ]; then
-  echo "🟢 Running default startup script: /config/start.sh"
-  CMD="/config/linux-sim.sh & bash"
+  echo "🟢 Running default startup script: /config/scripts/linux-sim.sh"
+  CMD="/config/scripts/linux-sim.sh & bash"
   # start.sh"
 else
   echo "🟢 Running custom command: $*"
@@ -87,12 +87,18 @@ else
 fi
 
 # Команды, которые должны выполняться всегда — перед CMD
+# mkdir -p /config/gcodes /config/logs;
+# ln -snf /config/logs ~/printer_data/logs;
+# ln -snf /config/gcodes ~/printer_data/gcodes;
 ENV_INIT='
-mkdir -p /config/gcodes /config/logs;
 mkdir -p ~/printer_data;
-ln -snf /config ~/printer_data/config;
-ln -snf /config/logs ~/printer_data/logs;
-ln -snf /config/gcodes ~/printer_data/gcodes;
+rm -rf ~/printer_data/config 2>/dev/null || true;
+ln -s /config/config ~/printer_data/config;
+rm -rf ~/printer_data/gcodes 2>/dev/null || true;
+ln -s /config/gcodes ~/printer_data/gcodes;
+rm -rf ~/printer_data/logs 2>/dev/null || true;
+ln -s /config/logs ~/printer_data/logs;
+
 '
 
 # Финальный запуск: сначала создаём симлинки, потом — основную команду

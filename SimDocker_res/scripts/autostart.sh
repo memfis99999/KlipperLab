@@ -3,7 +3,7 @@
 # │ KlipperLab — Klipper Firmware Build and Test Environment   │
 # │ Author: Yurii (https://github.com/memfis99999)             │
 # │ License: GNU GPLv3                                         │
-# │ Project started: 2025                                      │
+# │ Project started: 2025 - 2026                               │
 # └────────────────────────────────────────────────────────────┘
 # Description:
 #   This script runs automatically on container startup to:
@@ -34,7 +34,8 @@
 #   ├── klipper/
 #   └── KlipperLab/
 #       └── SimDocker_res/
-#           └── autostart.sh*
+#           └── scripts/
+#               └── autostart.sh*
 #
 # License:
 #   This project is licensed under the GNU General Public License v3.0.

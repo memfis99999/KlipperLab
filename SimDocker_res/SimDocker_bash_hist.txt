@@ -2,31 +2,12 @@ cd /klipper
 cd /config
 cd /
 clear
-make sim_defconfig
-make V=1 2>&1 | tee build.log
-make menuconfig
-make clean
-make
-scripts/check_whitespace.sh
-sudo nginx -c /config/nginx.conf &
+/klipper/scripts/check_whitespace.sh
+sudo nginx -c /config/config/nginx.conf &
 ps aux | grep nginx
 sudo nginx -s stop
 sudo nginx -s reload
-nohup /opt/klippy-env/bin/python /moonraker/moonraker/moonraker.py -c /config/moonraker.conf > /config/logs/moonraker.log 2>&1 &
-pkill -f moonraker.py
-nohup nice -n 5 /opt/klippy-env/bin/python /klipper/scripts/avrsim.py /klipper/out/klipper.elf > /congig/logs/simulavr.log 2>&1 &
-/opt/klippy-env/bin/python klippy/klippy.py /config/simulavr.cfg -a /tmp/klippy_uds -v
-/config/linux-sim.sh
-groups
-sudo usermod -a -G tty klippy
-sudo service klipper stop
-${TOOLCHAIN_DIR}/bin/python /klipper/klippy/klippy.py /config/linux-sim.cfg -l /config/logs/kli.log
-ls /tmp
-ls /tmp/printer
-history > /config/his
-sudo service klipper_mcu start
-sudo service klipper_mcu status
+gsudo service klipper stop
 sudo service --status-all
 /usr/local/bin/klipper_mcu -r -I /tmp/klipper_host_mcu
-/config/linux-sim.sh
-groups klippy
+/config/scripts/linux-sim.sh

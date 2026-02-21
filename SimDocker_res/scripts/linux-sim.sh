@@ -3,13 +3,13 @@
 # │ KlipperLab — Klipper Firmware Build and Test Environment   │
 # │ Author: Yurii (https://github.com/memfis99999)             │
 # │ License: GNU GPLv3                                         │
-# │ Project started: 2025                                      │
+# │ Project started: 2025 - 2026                               │
 # └────────────────────────────────────────────────────────────┘
 # Description:
 #   Default entrypoint script for SimDocker container.
 #   Prepares working directories, builds test firmware,
 #   and starts all required simulation services (nginx, Moonraker,
-#   SimulAVR, Klipper) for the emulated printer environment.
+#   Klipper) for the emulated printer environment.
 #
 #   Part of the KlipperLab project.
 #   Repository: https://github.com/memfis99999/KlipperLab
@@ -26,7 +26,8 @@
 #   ├── klipper/
 #   └── KlipperLab/
 #       └── SimDocker_res/
-#           └── linux-sim.sh*
+#           └── scripts/
+#               └── linux-sim.sh*
 #
 # License:
 #   This project is licensed under the GNU General Public License v3.0.
@@ -38,23 +39,8 @@ set -m
 
 echo "🛠️  Container started: initializing simulation environment..."
 
-source /config/linux-sim.env
-#
-#OUT_DIR="/config/out"
-#LOG_DIR="/config/logs"
-#
-## PYTHONDIR="${HOME}/klippy-env"
-## Find SRCDIR from the pathname of this script
-## SRCDIR="/klipper"
-## PRINTER_CFG="/config/linux-sim.cfg"
-#
-#INITDDIR="/etc/init.d"
-##"/etc/systemd/system"
-## KLIPPER_LOG=${LOG_DIR}/klippy.log
-#
-## KLIPPER_USER=$(id -nu)
-## KLIPPER_GROUP=$KLIPPER_USER
-#
+source /config/scripts/linux-sim.env
+
 # Helper functions
 report_status()
 {
@@ -73,70 +59,64 @@ install_systemctl_mock()
 {
     report_status "Installing systemctl_mock script..."
 
-    ULB_MOCK=/usr/local/bin/systemctl_mock
-    UB_CTL=/usr/bin/systemctl
-    ULB_CTL=/usr/local/bin/systemctl
-    UB_JCTL=/usr/bin/journalctl
-    ULB_JCTL=/usr/local/bin/journalctl
-    SBIN_CTL=/sbin/systemctl
-    SBIN_JCTL=/sbin/journalctl
+    ULB_MOCK="/usr/local/bin/systemctl_mock"
+    UB_CTL="/usr/bin/systemctl"
+    ULB_CTL="/usr/local/bin/systemctl"
+    UB_JCTL="/usr/bin/journalctl"
+    ULB_JCTL="/usr/local/bin/journalctl"
+    SBIN_CTL="/sbin/systemctl"
+    SBIN_JCTL="/sbin/journalctl"
 
-    sudo cp /config/systemctl.sh ${ULB_MOCK}
+    sudo cp ${SCRIPTS_DIR}/systemctl.sh ${ULB_MOCK}
     sudo chmod 777 ${ULB_MOCK}
 
-    sudo rm -f ${UB_CTL} ${ULB_CTL} ${UB_JCTL} ${ULB_JCTL}
+    sudo rm -f ${UB_CTL} ${ULB_CTL} ${UB_JCTL} ${ULB_JCTL}  ${SBIN_JCTL} ${SBIN_CTL} ${HOME_DIR}/klipper
 
     sudo ln -s ${ULB_MOCK} ${UB_CTL}
     sudo ln -s ${ULB_MOCK} ${ULB_CTL}
     sudo ln -s ${ULB_MOCK} ${UB_JCTL}
     sudo ln -s ${ULB_MOCK} ${ULB_JCTL}
-    sudo ln -s ${ULB_MOCK} ${SBIN_CTL}
     sudo ln -s ${ULB_MOCK} ${SBIN_JCTL}
+    sudo ln -s ${ULB_MOCK} ${SBIN_CTL}
+
+    sudo ln -s /klipper ${HOME_DIR}/klipper
 
     if [ ! -f ${SYSTEMCTL_LOG} ]; then
-        touch ${SYSTEMCTL_LOG}
+        sudo touch ${SYSTEMCTL_LOG}
     fi
-
     sudo chmod 666 ${SYSTEMCTL_LOG}
 }
 
-
-# Step 3: Install startup script
+# Step : Install startup script
 install_script()
 {
-#
+# Create service file klipper_mcu
+    report_status "Installing system klipper_mcu service start script..."
+    sudo cp ${SCRIPTS_DIR}/klipper_mcu.sh $INITDDIR/klipper_mcu
 
-
-
-
-# Create systemd service file klipper.service
-    report_status "Installing system klipper-mcu service start script..."
-    sudo cp /config/klipper_mcu.sh $INITDDIR/klipper_mcu
-
-# Create systemd service file klipper.service
+# Create service file klipper.service
     report_status "Installing system klipper service start script..."
-    sudo cp /config/klipper-start.sh $INITDDIR/klipper
+    sudo cp ${SCRIPTS_DIR}/klipper-start.sh $INITDDIR/klipper
 
     rm -f "/tmp/klippy.log"
-    ln -s "${LOG_DIR}/klippy.log" "/tmp/klippy.log"
+    ln -s "${KLIPPER_LOG}" "/tmp/klippy.log"
 }
 
-# Step 4: Start host software
+# Step : Start host software
 start_software()
 {
     report_status "Launching Klipper host software..."
-#    sudo service klipper_mcu restart
     sudo service klipper restart
 }
-
 
 # Build test firmware
 build_firmware()
 {
-    OLD_CONFIG="/tmp/.config_KlipperLab_Sim_Start"
+    report_status  "🔧 Building firmware for linux-sim  (simulation)..."
 
-    echo "🔧 Building firmware for linux-sim  (simulation)..."
+    OLD_CONFIG="/tmp/.config_KlipperLab_Sim_Start"
     LAST_DIR=$(pwd)
+
     cd /klipper
     cp .config "${OLD_CONFIG}"
 
@@ -151,28 +131,24 @@ build_firmware()
 
 start_moonraker()
 {
-    # Start Moonraker
-    echo "🚀 Starting Moonraker... Logging to ${LOG_DIR}/moonraker.log"
-    nohup "${TOOLCHAIN_DIR}/bin/python" /moonraker/moonraker/moonraker.py \
-        -c /config/moonraker.conf > "${LOG_DIR}/moonraker.log" 2>&1 &
+    report_status  "🚀 Starting Moonraker... Logging to ${MOONRAKER_LOG}"
+    nohup "${MOONRAKER_PYTHON}" "${MOONRAKER_APP}" \
+        -c "${MOONRAKER_CONF}" > "${MOONRAKER_LOG}" 2>&1 &
 }
 
 start_nginx()
 {
-    # Start nginx
-    echo "🌐 Starting nginx web server..."
-    sudo nginx -c /config/nginx.conf -t &
+    report_status  "🌐 Starting nginx web server..."
+    sudo nginx -c "${NGINX_CONF}" -t &
     sudo pkill nginx || true $
-    sudo nginx -c /config/nginx.conf &
+    sudo nginx -c "${NGINX_CONF}" &
 }
 
-# Waiting for firmware compilation to complete
-sleep 2
-
-# Start Klipper
-#echo "🔄 Starting Klipper..."
-#"${TOOLCHAIN_DIR}/bin/python" klippy/klippy.py ~/printer_data/config/printer.cfg \
-#   -a /tmp/klippy_uds -v 2>&1 | tee >(tee "${LOG_DIR}/klippy.log" > /tmp/klippy.log)
+start_cron()
+{
+    report_status  "🚀 Starting cron fix chmod"
+    nohup "${SCRIPTS_DIR}/cron_fix_chmod.sh" > /dev/null 2>&1 &
+}
 
 # Run installation steps defined above
 verify_ready
@@ -180,8 +156,6 @@ install_systemctl_mock
 install_script
 build_firmware
 start_software
+start_cron
 start_moonraker
-# start_software
 start_nginx
-
-# bash

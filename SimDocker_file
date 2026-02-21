@@ -32,15 +32,15 @@ LABEL maintainer="memfis99999" \
       version="1.0"
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV TOOLCHAIN_DIR=/opt/klippy-env
 ENV USERNAME=klippy
+ENV TOOLCHAIN_DIR=/home/${USERNAME}/klippy-env
 
 ARG TARGET_UID=1000
 ARG TARGET_GID=1000
 
-ARG GH_KL_SC=https://raw.githubusercontent.com/Klipper3d/klipper/master/scripts
+# ARG GH_KL_SC=https://raw.githubusercontent.com/Klipper3d/klipper/master/scripts
 ARG GH_MOONRAKER=https://github.com/Arksine/moonraker.git
-ARG GH_SIMAVR=git://git.savannah.nongnu.org/simulavr.git
+# ARG GH_SIMAVR=git://git.savannah.nongnu.org/simulavr.git
 ARG GH_FLUIDD=https://github.com/fluidd-core/fluidd/releases/latest/download/fluidd.zip
 
 # Install dependencies
@@ -63,11 +63,7 @@ RUN apt-get install -y \
         libffi-dev \
         virtualenv \
         swig \
-        gcc-avr \
-        avr-libc \
-        binutils-avr \
         gdb \
-        srecord \
         automake \
         autoconf \
         cmake \
@@ -76,7 +72,10 @@ RUN apt-get install -y \
         libsodium23 \
         libusb-dev \
         nginx \
-        curl
+        curl \
+        tree && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
 
 # Create user with specified UID and GID
 RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
@@ -87,32 +86,35 @@ RUN groupadd -g ${TARGET_GID} ${USERNAME} && \
     chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
 
 # Autostart custom shell logic, custom PS1, prepare toolchain dir
-RUN echo "/config/autostart.sh" >> /etc/bash.bashrc && \
+RUN echo "/config/scripts/autostart.sh" >> /etc/bash.bashrc && \
     printf '%s\n' 'PS1="\[\e[1;30;42m\]Klipper SimDocker Environment\[\e[0m\]\n\[\e]0;\u@\h: \w\a\]\${debian_chroot:+(\$debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/${USERNAME}/.bashrc && \
     mkdir -p ${TOOLCHAIN_DIR}/scripts && \
     chown -R ${USERNAME}:${USERNAME} ${TOOLCHAIN_DIR} && \
     chmod -R 755 ${TOOLCHAIN_DIR}
 
+USER ${USERNAME}
 WORKDIR $TOOLCHAIN_DIR
 
 # Copy Klipper Python requirements for simulation
 COPY klipper/scripts/klippy-requirements.txt ./scripts/
 COPY klipper/scripts/tests-requirements.txt ./scripts/
 
-RUN virtualenv -p python3 /opt/klippy-env && \
+RUN virtualenv -p python3 ${TOOLCHAIN_DIR} && \
     ./bin/pip install -r ./scripts/klippy-requirements.txt
 
 # Clone Moonraker and install Python requirements
-RUN git clone ${GH_MOONRAKER} /moonraker && \
-    ./bin/pip install \
-        -r /moonraker/scripts/moonraker-requirements.txt
+RUN git clone ${GH_MOONRAKER} /home/${USERNAME}/moonraker && \
+    /home/${USERNAME}/moonraker/scripts/install-moonraker.sh -z
+
+#./bin/pip install \
+#        -r /home/${USERNAME}/moonraker/scripts/moonraker-requirements.txt
 
 # # Clone and build SimulAVR
 # RUN git clone ${GH_SIMAVR} && \
 #     cd simulavr && \
 #     make python && \
 #     make build
-
+USER root
 # Download and unpack Fluidd
 RUN mkdir -p /var/www/fluidd && \
     cd /var/www/fluidd && \
@@ -123,13 +125,9 @@ RUN mkdir -p /var/www/fluidd && \
 # ENV PATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr:${PATH}"
 # ENV PYTHONPATH="${TOOLCHAIN_DIR}/simulavr/build/pysimulavr/"
 
-# Cleanup
-RUN apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+ENV PATH="~/klipper:${PATH}"
 
-ENV PATH="/klipper:${PATH}"
 
-USER ${USERNAME}
 RUN git config --global --add safe.directory /moonraker
 
 WORKDIR /klipper

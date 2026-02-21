@@ -1,6 +1,7 @@
 EnvDocker_res/logs
 EnvDocker_res/FIRMWARE
 SimDocker_res/out
+SimDocker_res/logs
 ci_build
 out
 *.so
