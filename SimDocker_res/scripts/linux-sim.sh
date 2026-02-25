@@ -109,6 +109,21 @@ start_software()
     sudo service klipper restart
 }
 
+build_firmware_if_sim()
+{
+    local branch
+    branch=$(git -C /klipper rev-parse --abbrev-ref HEAD 2>/dev/null)
+
+    if [ "$branch" = "linux-sim" ]; then
+        echo "🔧 Detected branch linux-sim — building firmware..."
+        build_firmware
+    else
+        echo "ℹ️ Branch is '$branch' — skipping build, installing klipper_mcu wrapper"
+        cp /config/scripts/klipper_mcu /usr/local/bin/klipper_mcu
+        chmod +x /usr/local/bin/klipper_mcu
+    fi
+}
+
 # Build test firmware
 build_firmware()
 {
@@ -123,7 +138,19 @@ build_firmware()
     cp /config/linux-sim_defconfig .config
     make olddefconfig
 
-    make flash OUT="${OUT_DIR}/"
+    if make flash OUT="${OUT_DIR}/"; then
+        echo "✔ Firmware build successful"
+
+        if [ -f "${OUT_DIR}/klipper.elf" ]; then
+            echo "📦 Installing klipper.elf → /config/scripts/klipper_mcu"
+            cp "${OUT_DIR}/klipper.elf" /config/scripts/klipper_mcu
+            chmod +x /config/scripts/klipper_mcu
+        else
+            echo "❌ ERROR: ${OUT_DIR}/klipper.elf not found!"
+        fi
+    else
+        echo "❌ Firmware build failed"
+    fi
 
     cp "${OLD_CONFIG}" .config
     cd "${LAST_DIR}"
@@ -154,7 +181,8 @@ start_cron()
 verify_ready
 install_systemctl_mock
 install_script
-build_firmware
+build_firmware_if_sim
+### build_firmware
 start_software
 start_cron
 start_moonraker
